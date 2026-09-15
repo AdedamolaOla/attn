@@ -36,6 +36,7 @@ public struct TodayBriefingHeader: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 32) {
             HStack(spacing: AttnSpacing.content) {
+                // Fixed 8pt title-to-date gap from the design.
                 VStack(alignment: .leading, spacing: AttnSpacing.compact) {
                     Text("Needs attn.")
                         .font(.title.bold())
@@ -51,11 +52,11 @@ public struct TodayBriefingHeader: View {
                 Button(action: onProfile) {
                     Image(systemName: "person.fill")
                         .font(.system(size: 19))
-                        .foregroundStyle(AttnColors.surfacePriority)
+                        .foregroundStyle(.white)
                         .frame(width: 50, height: 50)
                 }
                 .buttonStyle(.plain)
-                .glassEffect(.regular.interactive(), in: .circle)
+                .glassEffect(.regular.tint(AttnColors.surfacePriority).interactive(), in: .circle)
                 .accessibilityLabel("Profile")
             }
 
