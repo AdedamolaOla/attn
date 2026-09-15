@@ -13,10 +13,14 @@ public struct PriorityCardShowcase: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: AttnSpacing.section) {
-                    TodayBriefingHeader(
-                        summary: "Two priorities need attention. One item needs review.",
-                        selection: $selection
-                    )
+                    TimelineView(.periodic(from: .now, by: 60)) { context in
+                        TodayBriefingHeader(
+                            date: context.date,
+                            selection: $selection,
+                            onProfile: { show("Profile settings will be available in a later build.") }
+                        )
+                    }
+                    .padding(.bottom, 8)
                     if selection == .immediate {
                     sample(id: "payment", title: "Credit card payment", timing: "Due today",
                            sender: "RBC Mastercard", initials: "RBC",
@@ -39,11 +43,11 @@ public struct PriorityCardShowcase: View {
                         .font(AttnTypography.footnote)
                         .foregroundStyle(.secondary)
                 }
-                .padding(AttnSpacing.content)
+                .padding(.horizontal, AttnSpacing.panel)
+                .padding(.vertical, AttnSpacing.content)
             }
             .background(AttnColors.background)
-            .navigationTitle("Today")
-            .navigationBarTitleDisplayMode(.large)
+            .toolbar(.hidden, for: .navigationBar)
             .alert("Design preview", isPresented: $showingNotice) {
                 Button("OK", role: .cancel) {}
             } message: { Text(notice) }

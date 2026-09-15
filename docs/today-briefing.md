@@ -1,11 +1,16 @@
-# Today briefing header
+# Home header correction
+Source: Figma 108:3829 and designer's explicit correction.
 
-Implements sections 12–13 of the ATTN brief with San Francisco, a native large navigation title, a wrapping semantic-body summary and a native segmented Picker.
+- Replaces the earlier Today navigation title and summary with Needs attn., SF 28pt bold.
+- Date is current local day, formatted EEEE, MMMM d; a minute timeline refreshes it across midnight.
+- Date: 14pt medium, #B7B7B7. Profile: native glass person button, 50pt.
+- Screen insets: 20pt horizontal, 16pt vertical. Header-to-tabs gap: 32pt.
+- Tabs: 56pt base height, #FCFCFC capsule, 4pt horizontal inset.
+- Selected: white capsule, #007AFF bold text; black 8% shadow, x 1, y 2, radius 16, per latest user specification.
+- Unselected: #8E8E93 medium text, transparent background.
+- Native SwiftUI buttons with selected accessibility traits replace the system Picker to support the specified appearance. Selection moves over 200ms and respects Reduce Motion.
+- Larger accessibility text can grow the control beyond 56pt.
+- Profile currently opens an explicit preview notice. No account integration is implied.
+- Priority cards and their 42% corner highlights are unchanged.
 
-TodayBriefingHeader accepts host-provided summary text and a binding to TodaySection. It does not generate summaries or access Gmail.
-
-The app's existing sample showcase now presents Today. Immediate displays payment, flight check-in and the uncertain appointment. Upcoming displays the interview. The daily summary stays stable across selections; review state survives segment changes and does not imply external resolution. Switching uses the same scroll container and navigation screen without adding custom animation.
-
-Header previews cover the normal briefing, zero priorities, one priority and accessibility text. Sample cards retain their brand tones and 42% white highlights. The sample-data disclosure remains visible below the cards.
-
-Validation: reviewed the source changes for native control use, enum selection, text wrapping, preserved callbacks and sample grouping. Xcode and simulator are unavailable here. On Mac, verify title collapse, Immediate/Upcoming switching, review state across switches, dark mode, VoiceOver and accessibility text sizes. No live Gmail or AI analysis is implemented in this phase.
+Source reviewed for requested values and host call-site compatibility. Xcode/simulator visual verification remains pending; no claim of pixel-perfect rendering.
