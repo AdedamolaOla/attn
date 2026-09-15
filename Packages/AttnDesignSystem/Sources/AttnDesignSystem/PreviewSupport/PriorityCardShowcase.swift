@@ -2,6 +2,7 @@ import SwiftUI
 
 /// Interactive sample data only. No Gmail connection or analysis is performed.
 public struct PriorityCardShowcase: View {
+    @State private var selection: TodaySection = .immediate
     @State private var reviewed: Set<String> = []
     @State private var notice = ""
     @State private var showingNotice = false
@@ -12,9 +13,11 @@ public struct PriorityCardShowcase: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: AttnSpacing.section) {
-                    Text("Design preview · Sample priorities")
-                        .font(AttnTypography.subheadline)
-                        .foregroundStyle(.secondary)
+                    TodayBriefingHeader(
+                        summary: "Two priorities need attention. One item needs review.",
+                        selection: $selection
+                    )
+                    if selection == .immediate {
                     sample(id: "payment", title: "Credit card payment", timing: "Due today",
                            sender: "RBC Mastercard", initials: "RBC",
                            tone: AttnColors.priorityBlue,
@@ -22,22 +25,25 @@ public struct PriorityCardShowcase: View {
                     sample(id: "flight", title: "Flight check-in", timing: "Opens in 3 hours",
                            sender: "Example Air", initials: "EA",
                            tone: AttnColors.priorityGreen, logoColor: Color(red: 0.04, green: 0.32, blue: 0.19))
-                    sample(id: "interview", title: "Interview", timing: "Tomorrow · 9:30 AM",
-                           sender: "Example Studio", initials: "ES",
-                           tone: AttnColors.priorityOrange, logoColor: Color(red: 0.48, green: 0.19, blue: 0.02),
-                           attention: .upcoming)
                     sample(id: "uncertain", title: "Possible appointment change", timing: "Timing unconfirmed",
                            sender: "Example Clinic", initials: "EC",
                            tone: AttnColors.priorityCyan, logoColor: Color(red: 0.02, green: 0.31, blue: 0.38),
                            attention: .needsReview)
-                    Text("Placeholder logos. Card colours follow the sample brand, independently of urgency. Review state resets when this preview closes.")
+                    } else {
+                    sample(id: "interview", title: "Interview", timing: "Tomorrow · 9:30 AM",
+                           sender: "Example Studio", initials: "ES",
+                           tone: AttnColors.priorityOrange, logoColor: Color(red: 0.48, green: 0.19, blue: 0.02),
+                           attention: .upcoming)
+                    }
+                    Text("Sample priorities · Gmail is not connected")
                         .font(AttnTypography.footnote)
                         .foregroundStyle(.secondary)
                 }
                 .padding(AttnSpacing.content)
             }
             .background(AttnColors.background)
-            .navigationTitle("Priority cards")
+            .navigationTitle("Today")
+            .navigationBarTitleDisplayMode(.large)
             .alert("Design preview", isPresented: $showingNotice) {
                 Button("OK", role: .cancel) {}
             } message: { Text(notice) }
