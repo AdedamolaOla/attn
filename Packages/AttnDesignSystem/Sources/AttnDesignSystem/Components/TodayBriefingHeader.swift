@@ -52,11 +52,11 @@ public struct TodayBriefingHeader: View {
                 Button(action: onProfile) {
                     Image(systemName: "person.fill")
                         .font(.system(size: 19))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(AttnColors.surfacePriority)
                         .frame(width: 50, height: 50)
                 }
                 .buttonStyle(.plain)
-                .glassEffect(.regular.tint(AttnColors.surfacePriority).interactive(), in: .circle)
+                .glassEffect(.regular.interactive(), in: .circle)
                 .accessibilityLabel("Profile")
             }
 

@@ -3,7 +3,7 @@ Source: Figma 108:3829 and designer's explicit correction.
 
 - Replaces the earlier Today navigation title and summary with Needs attn., SF 28pt bold.
 - Date is current local day, formatted EEEE, MMMM d; a minute timeline refreshes it across midnight.
-- Date: 14pt medium, #B7B7B7. Profile: dark-tinted native Liquid Glass person button, 50pt, with a white symbol. Title-to-date gap: fixed 8pt (AttnSpacing.compact).
+- Date: 14pt medium, #B7B7B7. Profile: untinted regular Liquid Glass person button, 50pt, with a near-black symbol. The pale translucent surface and system glass edge follow the designer’s close-up; the previous dark tint was a misinterpretation. Title-to-date gap: fixed 8pt (AttnSpacing.compact).
 - Screen insets: 20pt horizontal, 16pt vertical. Header-to-tabs gap: 32pt.
 - Tabs: 56pt base height, #FCFCFC capsule, 4pt horizontal inset.
 - Selected: white capsule, #007AFF bold text; black 8% shadow, x 1, y 2, radius 16, per latest user specification.
