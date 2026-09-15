@@ -121,6 +121,24 @@ public struct PriorityCard<Logo: View>: View {
                 .fill(brand.tone
                     .shadow(.inner(color: .white.opacity(0.36), radius: 1.3, x: -2, y: 2))
                     .shadow(.inner(color: .black.opacity(0.25), radius: 1, x: 0, y: -2)))
+                .overlay {
+                    GeometryReader { geometry in
+                        // Decorative light only; kept behind the opaque content.
+                        Circle()
+                            .fill(.white.opacity(0.28))
+                            .frame(width: 188, height: 188)
+                            .blur(radius: 50)
+                            .position(x: 40, y: 16)
+                        Circle()
+                            .fill(.white.opacity(0.28))
+                            .frame(width: 188, height: 188)
+                            .blur(radius: 50)
+                            .position(x: geometry.size.width - 28,
+                                      y: geometry.size.height - 16)
+                    }
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                }
         }
         .clipShape(.rect(cornerRadius: AttnRadius.card))
     }
