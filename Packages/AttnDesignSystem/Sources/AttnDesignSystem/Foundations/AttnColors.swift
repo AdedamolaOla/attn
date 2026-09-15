@@ -10,6 +10,10 @@ public enum AttnColors {
     public static let separator = Color(uiColor: .separator)
 
     public static let surfacePriority = Color(red: 16 / 255, green: 16 / 255, blue: 18 / 255)
+    /// PriorityCard inner panel, from surface/widget.
+    public static let surfaceWidget = Color(red: 22 / 255, green: 22 / 255, blue: 24 / 255)
+    public static let onDarkTertiary = Color(red: 172 / 255, green: 172 / 255, blue: 172 / 255)
+    public static let actionNeeded = Color(red: 255 / 255, green: 69 / 255, blue: 59 / 255)
     public static let surfaceConfidence = Color(red: 169 / 255, green: 239 / 255, blue: 228 / 255)
 
     public static let priorityBlue = Color(red: 124 / 255, green: 208 / 255, blue: 255 / 255)
