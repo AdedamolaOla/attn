@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A30000000000000000000001 /* AttnDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = A30000000000000000000002 /* AttnDesignSystem */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		CE8D70BD3058EE1500451585 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A30000000000000000000001 /* AttnDesignSystem in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,7 @@
 			);
 			name = attn;
 			packageProductDependencies = (
+				A30000000000000000000002 /* AttnDesignSystem */,
 			);
 			productName = attn;
 			productReference = CE8D70AF3058EE1300451585 /* attn.app */;
@@ -195,6 +201,9 @@
 			);
 			mainGroup = CE8D70A63058EE1300451585;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A30000000000000000000003 /* XCLocalSwiftPackageReference "AttnDesignSystem" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = CE8D70B03058EE1300451585 /* Products */;
 			projectDirPath = "";
@@ -267,6 +276,21 @@
 			targetProxy = CE8D70C73058EE1500451585 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		A30000000000000000000003 /* XCLocalSwiftPackageReference "AttnDesignSystem" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/AttnDesignSystem;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A30000000000000000000002 /* AttnDesignSystem */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A30000000000000000000003 /* XCLocalSwiftPackageReference "AttnDesignSystem" */;
+			productName = AttnDesignSystem;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCBuildConfiguration section */
 		CE8D70CE3058EE1500451585 /* Debug */ = {
