@@ -125,12 +125,12 @@ public struct PriorityCard<Logo: View>: View {
                     GeometryReader { geometry in
                         // Decorative light only; kept behind the opaque content.
                         Circle()
-                            .fill(.white.opacity(0.28))
+                            .fill(.white.opacity(0.42))
                             .frame(width: 188, height: 188)
                             .blur(radius: 50)
                             .position(x: 40, y: 16)
                         Circle()
-                            .fill(.white.opacity(0.28))
+                            .fill(.white.opacity(0.42))
                             .frame(width: 188, height: 188)
                             .blur(radius: 50)
                             .position(x: geometry.size.width - 28,

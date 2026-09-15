@@ -17,7 +17,7 @@ User decisions: San Francisco throughout; placeholder logos allowed; the outer c
 - Buttons are at least 44pt tall instead of the approximately 36pt reference. This increases card height.
 - Placeholder initials replace the RBC image. The supplied palette demonstrates logo-driven colour; automatic colour extraction is not implemented.
 - Native ellipsis replaces the equivalent three-dot glyph.
-- Native inner shadows reproduce the outer edge treatment. Two native white circles add subtle top-left and bottom-right highlights, as requested: 188pt diameter, 28% opacity, 50pt blur. They sit behind content, are clipped to the outer card, and do not receive touches or accessibility focus. Simulator intensity verification is pending.
+- Native inner shadows reproduce the outer edge treatment. Two native white circles add subtle top-left and bottom-right highlights, as requested: 188pt diameter, 42% opacity, 50pt blur. They sit behind content, are clipped to the outer card, and do not receive touches or accessibility focus. Simulator intensity verification is pending.
 - Immediate is source-based. Upcoming, needs-review and undo-review treatments are provisional extensions for review.
 - No fixed card height or title truncation; content can grow.
 
