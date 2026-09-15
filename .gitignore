@@ -1,0 +1,13 @@
+.DS_Store
+
+# Xcode user-specific files
+xcuserdata/
+*.xcuserstate
+
+# Build output
+DerivedData/
+build/
+
+# Swift Package Manager
+.build/
+.swiftpm/
