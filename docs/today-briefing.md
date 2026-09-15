@@ -14,3 +14,5 @@ Source: Figma 108:3829 and designer's explicit correction.
 - Priority cards and their 42% corner highlights are unchanged.
 
 Source reviewed for requested values and host call-site compatibility. Xcode/simulator visual verification remains pending; no claim of pixel-perfect rendering.
+
+- Profile edge refinement: 0.5pt inset gradient rim, white at the top/bottom and black at 16–20% along the sides, to define pale glass against white. Native regular glass still supplies the translucent centre and interaction. These are ATTN visual tuning values; simulator appearance remains to be verified.

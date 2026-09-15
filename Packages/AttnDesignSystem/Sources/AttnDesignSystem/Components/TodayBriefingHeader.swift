@@ -57,6 +57,25 @@ public struct TodayBriefingHeader: View {
                 }
                 .buttonStyle(.plain)
                 .glassEffect(.regular.interactive(), in: .circle)
+                .overlay {
+                    // A fine refractive rim keeps pale glass legible on white.
+                    Circle()
+                        .strokeBorder(
+                            LinearGradient(
+                                stops: [
+                                    .init(color: .white.opacity(0.65), location: 0),
+                                    .init(color: .black.opacity(0.20), location: 0.35),
+                                    .init(color: .black.opacity(0.16), location: 0.65),
+                                    .init(color: .white.opacity(0.55), location: 1)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            ),
+                            lineWidth: 0.5
+                        )
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
                 .accessibilityLabel("Profile")
             }
 
