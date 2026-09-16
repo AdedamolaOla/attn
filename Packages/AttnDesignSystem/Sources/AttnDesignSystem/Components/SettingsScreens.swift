@@ -447,7 +447,7 @@ public struct SettingsAboutLegalView: View {
 
                     VStack(spacing: 0) {
                         Text(
-                            "Version \(Bundle.main.infoDictionary?[\"CFBundleShortVersionString\"] as? String ?? \"1.0\")\\n" +
+                            "Version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")\n" +
                             "© 2026 attn. All rights reserved."
                         )
                         .font(.system(size: 13))
