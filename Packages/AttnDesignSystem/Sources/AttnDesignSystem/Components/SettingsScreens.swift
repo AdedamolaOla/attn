@@ -426,37 +426,60 @@ public struct HelpTopicsView: View {
 
 public struct SettingsAboutLegalView: View {
     @Environment(\.dismiss) private var dismiss
+
     public init() {}
 
     public var body: some View {
         VStack(spacing: 0) {
-            SettingsScreenHeader(title: "About", dismiss: dismiss)
+            NotificationsSettingsHeader(title: "About", dismiss: dismiss)
+
             ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    SettingsCaption("Connect with attn.")
-                        .padding(.vertical, 8)
-                    aboutRow("X/Twitter")
-                    aboutRow("Privacy Policy")
-                    aboutRow("Terms of Use")
-                    aboutRow("Contact Support")
-                    VStack(spacing: 4) {
-                        Image("attn-logo", bundle: .module)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 72, height: 34)
-                        Text("Version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
-                            .font(.system(size: 12))
-                            .foregroundStyle(Color.attnSecondary)
+                VStack(alignment: .leading, spacing: 16) {
+                    aboutSection(
+                        title: "Connect with attn.",
+                        rows: ["X/Twitter", "Tiktok", "Instagram"]
+                    )
+
+                    aboutSection(
+                        title: "Legal",
+                        rows: ["Terms of Service", "Privacy Policy"]
+                    )
+
+                    VStack(spacing: 0) {
+                        Text(
+                            "Version \(Bundle.main.infoDictionary?[\"CFBundleShortVersionString\"] as? String ?? \"1.0\")\\n" +
+                            "© 2026 attn. All rights reserved."
+                        )
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color(red: 206/255, green: 206/255, blue: 206/255))
+                        .multilineTextAlignment(.center)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.top, 42)
+                    .frame(height: 123)
                 }
-                .padding(.horizontal, AttnSpacing.panel)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.bottom, AttnSpacing.expanded)
             }
         }
         .background(Color.white)
         .toolbar(.hidden, for: .navigationBar)
+    }
+
+    private func aboutSection(title: String, rows: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(title)
+                .font(.system(size: 14))
+                .foregroundStyle(Color.attnSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, AttnSpacing.panel)
+                .padding(.vertical, 8)
+
+            VStack(spacing: 0) {
+                ForEach(rows, id: \.self) { row in
+                    aboutRow(row)
+                }
+            }
+        }
     }
 
     private func aboutRow(_ title: String) -> some View {
@@ -465,17 +488,19 @@ public struct SettingsAboutLegalView: View {
                 Text(title)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(Color.attnPrimary)
+
                 Spacer()
+
                 Image("chevron-right", bundle: .module)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 20, height: 20)
             }
             .frame(height: 56)
-            Rectangle()
-                .fill(Color(red: 229/255, green: 229/255, blue: 234/255))
-                .frame(height: 1)
-                .mask(Rectangle().stroke(style: StrokeStyle(lineWidth: 1, dash: [3, 3])))
+            .padding(.horizontal, AttnSpacing.panel)
+
+            DashedSettingsDivider()
+                .padding(.trailing, AttnSpacing.panel)
         }
     }
 }
