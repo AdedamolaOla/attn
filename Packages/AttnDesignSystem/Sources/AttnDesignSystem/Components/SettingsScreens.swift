@@ -15,13 +15,12 @@ public struct SettingsNotificationsWidgetsView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     ZStack {
                         Color(red: 251/255, green: 251/255, blue: 251/255)
-                        Image("attn-widget", bundle: .module)
-                            .resizable()
-                            .scaledToFit()
+                        WidgetPreviewImage()
                             .padding(.horizontal, 16)
                             .padding(.vertical, 18)
                     }
                     .frame(maxWidth: .infinity)
+                    .frame(height: 184)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
 
                     SettingsOption(
@@ -273,6 +272,20 @@ private struct NotificationsSettingsHeader: View {
     }
 }
 
+private struct WidgetPreviewImage: View {
+    var body: some View {
+        if let image = UIImage(named: "attn-widget", in: .main, compatibleWith: nil)
+            ?? UIImage(named: "attn-widget", in: .module, compatibleWith: nil) {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+        } else {
+            Color.clear
+                .accessibilityHidden(true)
+        }
+    }
+}
+
 private struct SettingsOption: View {
     let title: String
     let detail: String
@@ -287,37 +300,14 @@ private struct SettingsOption: View {
                 Spacer()
                 Toggle("", isOn: $isOn)
                     .labelsHidden()
-                    .toggleStyle(AttnSwitchStyle())
+                    .toggleStyle(.switch)
+                    .tint(Color(red: 52/255, green: 199/255, blue: 89/255))
             }
             Text(detail)
                 .font(.system(size: 12))
                 .foregroundStyle(Color.attnSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-    }
-}
-
-private struct AttnSwitchStyle: ToggleStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        Button {
-            withAnimation(.easeInOut(duration: 0.16)) {
-                configuration.isOn.toggle()
-            }
-        } label: {
-            Capsule()
-                .fill(configuration.isOn ? Color.green : Color(red: 229/255, green: 229/255, blue: 234/255))
-                .frame(width: 51, height: 31)
-                .overlay(alignment: configuration.isOn ? .trailing : .leading) {
-                    Circle()
-                        .fill(Color.white)
-                        .frame(width: 27, height: 27)
-                        .padding(2)
-                        .shadow(color: .black.opacity(0.12), radius: 1, y: 1)
-                }
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Setting toggle")
-        .accessibilityValue(configuration.isOn ? "On" : "Off")
     }
 }
 
