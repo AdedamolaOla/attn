@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 public struct SettingsNotificationsWidgetsView: View {
     @Environment(\.dismiss) private var dismiss
