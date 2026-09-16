@@ -50,7 +50,7 @@ public struct SettingsNotificationsWidgetsView: View {
 }
 
 public struct SettingsAppIconView: View {
-    @Environment(\\.dismiss) private var dismiss
+    @Environment(\.dismiss) private var dismiss
     @State private var selected = 0
 
     private let iconOptions: [AppIconOption] = [
@@ -94,7 +94,7 @@ private struct AppIconOption: Identifiable {
     let style: AppIconTileStyle
 }
 
-private enum AppIconTileStyle {
+private enum AppIconTileStyle: Equatable {
     case signature
     case gradient
     case pridey
@@ -135,7 +135,7 @@ private struct AppIconRow: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\\(option.title), \\(option.subtitle)")
+        .accessibilityLabel("\(option.title), \(option.subtitle)")
         .accessibilityValue(isSelected ? "Selected" : "Not selected")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
