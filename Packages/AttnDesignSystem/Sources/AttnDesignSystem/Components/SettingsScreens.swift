@@ -298,7 +298,7 @@ public struct HelpTopicsView: View {
                 HelpFAQItem(
                     id: "email-prioritizing-why-connect",
                     question: "Why do I need to connect my email?",
-                    answer: "Connecting your email is how attn finds information that may need your attention.\\n\\nWithout access to your email, attn can't identify or organize potential priorities for you."
+                    answer: "Connecting your email is how attn finds information that may need your attention.\n\nWithout access to your email, attn can't identify or organize potential priorities for you."
                 ),
                 HelpFAQItem(
                     id: "email-prioritizing-access",
