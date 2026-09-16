@@ -425,7 +425,11 @@ private struct OnboardingAnalysisScreen: View {
                     progress = stage.0
                 }
             }
-            try? await Task.sleep(nanoseconds: 560_000_000)
+            // M04: complete only after a visible 240–320ms finish and a short hold.
+            withAnimation(.easeOut(duration: 0.28)) {
+                progress = 100
+            }
+            try? await Task.sleep(nanoseconds: 460_000_000)
             guard !Task.isCancelled else { return }
             onComplete()
         }
