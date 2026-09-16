@@ -26,17 +26,17 @@ public struct SettingsNotificationsWidgetsView: View {
 
                     SettingsOption(
                         title: "Home Screen Widget",
-                        body: "Adding the widget to your Home Screen helps you see your most important priorities without opening the app.",
+                        detail: "Adding the widget to your Home Screen helps you see your most important priorities without opening the app.",
                         isOn: $homeWidget
                     )
                     SettingsOption(
                         title: "Notifications",
-                        body: "ATTN only interrupts you when missing something could have a real consequence.",
+                        detail: "ATTN only interrupts you when missing something could have a real consequence.",
                         isOn: $notifications
                     )
                     SettingsOption(
                         title: "Dynamic Island",
-                        body: "Show a countdown when a deadline is near",
+                        detail: "Show a countdown when a deadline is near",
                         isOn: $dynamicIsland
                     )
                 }
@@ -220,6 +220,33 @@ public struct SettingsAboutLegalView: View {
     }
 }
 
+private struct SettingsScreenHeader: View {
+    let title: String
+    let dismiss: DismissAction
+
+    var body: some View {
+        ZStack {
+            Text(title)
+                .font(.system(size: 20, weight: .bold))
+                .foregroundStyle(Color.attnPrimary)
+            HStack {
+                Button { dismiss() } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .medium))
+                        .frame(width: 50, height: 50)
+                }
+                .buttonStyle(.plain)
+                .notificationsBackButton()
+                .accessibilityLabel("Back")
+                Spacer()
+            }
+        }
+        .padding(.horizontal, AttnSpacing.panel)
+        .padding(.top, 25)
+        .padding(.bottom, AttnSpacing.section)
+    }
+}
+
 private struct NotificationsSettingsHeader: View {
     let title: String
     let dismiss: DismissAction
@@ -248,7 +275,7 @@ private struct NotificationsSettingsHeader: View {
 
 private struct SettingsOption: View {
     let title: String
-    let body: String
+    let detail: String
     @Binding var isOn: Bool
 
     var body: some View {
@@ -262,7 +289,7 @@ private struct SettingsOption: View {
                     .labelsHidden()
                     .toggleStyle(AttnSwitchStyle())
             }
-            Text(body)
+            Text(detail)
                 .font(.system(size: 12))
                 .foregroundStyle(Color.attnSecondary)
                 .fixedSize(horizontal: false, vertical: true)
