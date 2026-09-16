@@ -81,7 +81,7 @@ private struct OnboardingWelcomeScreen: View {
                     .frame(height: 262)
 
                 VStack(spacing: 12) {
-                    Text("Know what deserves\\nyour attention.")
+                    Text("Know what deserves\nyour attention.")
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .tracking(-1.1)
                         .multilineTextAlignment(.center)
@@ -90,7 +90,7 @@ private struct OnboardingWelcomeScreen: View {
                         .offset(y: reduceMotion || isVisible ? 0 : 10)
                         .animation(.easeOut(duration: 0.34).delay(0.28), value: isVisible)
 
-                    Text("attn quietly finds important emails\\nbefore they become problems.")
+                    Text("attn quietly finds important emails\nbefore they become problems.")
                         .font(.system(size: 15, weight: .medium, design: .rounded))
                         .multilineTextAlignment(.center)
                         .foregroundStyle(.white.opacity(0.86))
