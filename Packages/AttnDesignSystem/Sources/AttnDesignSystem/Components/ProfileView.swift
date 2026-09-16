@@ -51,11 +51,6 @@ public struct ProfileView: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text("Liam Oliver").font(.system(size: 18, weight: .semibold))
-                    Spacer()
-                    Text("● Connected").font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(Color(red: 31/255, green: 148/255, blue: 92/255))
-                        .padding(.horizontal, 9).padding(.vertical, 6)
-                        .background(Color(red: 229/255, green: 247/255, blue: 235/255), in: .capsule)
                 }
                 Text("Liamoliver@gmail.com")
                     .font(.system(size: 13))
@@ -93,13 +88,13 @@ public struct ProfileView: View {
                     .scaledToFit()
                     .frame(width: 19, height: 19)
                     .background(Color(red: 251/255, green: 251/255, blue: 251/255), in: .rect(cornerRadius: 8))
-                Text(title).font(.system(size: 14, weight: .medium))
+                Text(title).font(.system(size: 16, weight: .medium))
                     .foregroundStyle(Color(red: 27/255, green: 27/255, blue: 27/255))
                 Spacer()
                 Image("chevron-right", bundle: .module)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 17, height: 17)
+                    .frame(width: 20, height: 20)
             }
             .padding(.horizontal, AttnSpacing.panel).padding(.vertical, 12).frame(minHeight: 56)
         }.buttonStyle(.plain)
