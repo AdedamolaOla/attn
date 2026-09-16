@@ -7,7 +7,6 @@ public struct PriorityCardShowcase: View {
     @State private var notice = ""
     @State private var showingNotice = false
     @State private var showingProfile = false
-    @State private var showingProfile = false
 
     public init() {}
 
