@@ -6,7 +6,8 @@ public struct ProfileView: View {
     public init() {}
 
     public var body: some View {
-        VStack(spacing: 0) {
+        NavigationStack {
+            VStack(spacing: 0) {
             header
             ScrollView {
                 VStack(spacing: 0) {
@@ -17,7 +18,9 @@ public struct ProfileView: View {
             }
             disconnectArea
         }
-        .background(Color.white)
+            .background(Color.white)
+            .toolbar(.hidden, for: .navigationBar)
+        }
         .confirmationDialog("Disconnect Gmail?", isPresented: $confirmDisconnect, titleVisibility: .visible) {
             Button("Disconnect Gmail", role: .destructive) {}
             Button("Cancel", role: .cancel) {}
@@ -81,7 +84,7 @@ public struct ProfileView: View {
     }
 
     private func settingRow(_ icon: String, _ title: String) -> some View {
-        Button {} label: {
+        NavigationLink(destination: destination(for: title)) {
             HStack(spacing: 14) {
                 Image(icon, bundle: .module)
                     .resizable()
@@ -97,7 +100,24 @@ public struct ProfileView: View {
                     .frame(width: 20, height: 20)
             }
             .padding(.horizontal, AttnSpacing.panel).padding(.vertical, 12).frame(minHeight: 56)
-        }.buttonStyle(.plain)
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func destination(for title: String) -> some View {
+        switch title {
+        case "Notifications & Widget":
+            SettingsNotificationsWidgetsView()
+        case "App Icon":
+            SettingsAppIconView()
+        case "FAQs":
+            HelpTopicsView()
+        case "About":
+            SettingsAboutLegalView()
+        default:
+            EmptyView()
+        }
     }
 
     private var disconnectArea: some View {
