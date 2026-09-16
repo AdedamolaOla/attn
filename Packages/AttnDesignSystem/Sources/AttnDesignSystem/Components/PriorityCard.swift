@@ -180,7 +180,6 @@ public struct PriorityCard<Logo: View>: View {
     }
 
     @ViewBuilder private var menuActions: some View {
-        Button("Why this matters", action: onOpen)
         Button(isReviewed ? "Undo review" : "Mark reviewed", action: onReview)
         if !isReviewed {
             Button("Snooze", action: onSnooze)

@@ -6,6 +6,7 @@ public struct PriorityCardShowcase: View {
     @State private var reviewed: Set<String> = []
     @State private var notice = ""
     @State private var showingNotice = false
+    @State private var showingProfile = false
 
     public init() {}
 
@@ -17,7 +18,7 @@ public struct PriorityCardShowcase: View {
                         TodayBriefingHeader(
                             date: context.date,
                             selection: $selection,
-                            onProfile: { show("Profile settings will be available in a later build.") }
+                            onProfile: { showingProfile = true }
                         )
                     }
                     .padding(.bottom, 8)
@@ -52,6 +53,7 @@ public struct PriorityCardShowcase: View {
                 Button("OK", role: .cancel) {}
             } message: { Text(notice) }
         }
+        .sheet(isPresented: $showingProfile) { ProfileView() }
     }
 
     private func sample(
