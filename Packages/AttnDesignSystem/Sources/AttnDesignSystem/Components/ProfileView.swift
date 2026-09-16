@@ -68,11 +68,11 @@ public struct ProfileView: View {
 
     private var settingsRows: some View {
         VStack(spacing: 0) {
-            settingRow("bell.svg", "Notifications & Widget"); divider
-            settingRow("attn logo-1.svg", "App Icon"); divider
-            settingRow("question-circle.svg", "FAQs"); divider
-            settingRow("annotation.svg", "Send Feedback"); divider
-            settingRow("attn logo.svg", "About")
+            settingRow("bell", "Notifications & Widget"); divider
+            settingRow("attn logo-1", "App Icon"); divider
+            settingRow("question-circle", "FAQs"); divider
+            settingRow("annotation", "Send Feedback"); divider
+            settingRow("attn logo", "About")
         }
     }
 
@@ -92,7 +92,7 @@ public struct ProfileView: View {
                 Text(title).font(.system(size: 16, weight: .medium))
                     .foregroundStyle(Color(red: 27/255, green: 27/255, blue: 27/255))
                 Spacer()
-                Image("chevron-right.svg", bundle: .module).frame(width: 20, height: 20)
+                Image("chevron-right", bundle: .module).frame(width: 20, height: 20)
             }
             .padding(.horizontal, AttnSpacing.panel).padding(.vertical, 12).frame(minHeight: 56)
         }.buttonStyle(.plain)
