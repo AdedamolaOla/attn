@@ -40,7 +40,7 @@ public struct ProfileView: View {
             }
         }
         .padding(.horizontal, AttnSpacing.panel)
-        .padding(.top, 38)
+        .padding(.top, 25)
         .padding(.bottom, AttnSpacing.section)
     }
 
@@ -91,7 +91,7 @@ public struct ProfileView: View {
                 Image(icon, bundle: .module)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 32, height: 32)
+                    .frame(width: 19, height: 19)
                     .background(Color(red: 251/255, green: 251/255, blue: 251/255), in: .rect(cornerRadius: 8))
                 Text(title).font(.system(size: 16, weight: .medium))
                     .foregroundStyle(Color(red: 27/255, green: 27/255, blue: 27/255))
@@ -99,7 +99,7 @@ public struct ProfileView: View {
                 Image("chevron-right", bundle: .module)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 20, height: 20)
+                    .frame(width: 12, height: 12)
             }
             .padding(.horizontal, AttnSpacing.panel).padding(.vertical, 12).frame(minHeight: 56)
         }.buttonStyle(.plain)
