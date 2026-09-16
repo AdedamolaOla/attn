@@ -50,52 +50,194 @@ public struct SettingsNotificationsWidgetsView: View {
 }
 
 public struct SettingsAppIconView: View {
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\\.dismiss) private var dismiss
     @State private var selected = 0
+
+    private let iconOptions: [AppIconOption] = [
+        AppIconOption(id: 0, title: "Signature", subtitle: "Normal attn icon", style: .signature),
+        AppIconOption(id: 1, title: "Gradient", subtitle: "A bold blend of colours", style: .gradient),
+        AppIconOption(id: 2, title: "Pridey", subtitle: "A celebration of identity & being yourself", style: .pridey),
+        AppIconOption(id: 3, title: "Nighty", subtitle: "Black and white / monochrome", style: .nighty)
+    ]
+
     public init() {}
 
     public var body: some View {
         VStack(spacing: 0) {
-            SettingsScreenHeader(title: "App Icon", dismiss: dismiss)
+            NotificationsSettingsHeader(title: "App Icon", dismiss: dismiss)
             ScrollView {
-                VStack(alignment: .leading, spacing: AttnSpacing.section) {
-                    Text("Choose an app icon")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.attnPrimary)
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                        iconOption(0, "attn-logo")
-                        iconOption(1, "attn-logo-1")
-                        iconOption(2, "attn-logo")
+                VStack(spacing: 0) {
+                    ForEach(iconOptions) { option in
+                        AppIconRow(
+                            option: option,
+                            isSelected: selected == option.id
+                        ) {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                selected = option.id
+                            }
+                        }
                     }
-                    SettingsCaption("You can change this anytime in Settings.")
                 }
-                .padding(.horizontal, AttnSpacing.panel)
-                .padding(.top, 16)
+                .frame(maxWidth: .infinity)
                 .padding(.bottom, AttnSpacing.expanded)
             }
         }
         .background(Color.white)
         .toolbar(.hidden, for: .navigationBar)
     }
+}
 
-    private func iconOption(_ index: Int, _ asset: String) -> some View {
-        Button { selected = index } label: {
-            VStack(spacing: 8) {
-                Image(asset, bundle: .module)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 76, height: 76)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 18)
-                            .stroke(selected == index ? Color.accentColor : .clear, lineWidth: 3)
+private struct AppIconOption: Identifiable {
+    let id: Int
+    let title: String
+    let subtitle: String
+    let style: AppIconTileStyle
+}
+
+private enum AppIconTileStyle {
+    case signature
+    case gradient
+    case pridey
+    case nighty
+}
+
+private struct AppIconRow: View {
+    let option: AppIconOption
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 0) {
+                HStack(spacing: 14) {
+                    AppIconTile(style: option.style)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(option.title)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(Color.attnPrimary)
+                        Text(option.subtitle)
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color.attnSecondary)
+                            .lineLimit(2)
                     }
-                Text(index == 0 ? "Signature" : "Classic")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.attnPrimary)
+
+                    Spacer(minLength: 8)
+
+                    AppIconRadio(isSelected: isSelected)
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+
+                DashedSettingsDivider()
             }
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\\(option.title), \\(option.subtitle)")
+        .accessibilityValue(isSelected ? "Selected" : "Not selected")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+private struct AppIconTile: View {
+    let style: AppIconTileStyle
+
+    var body: some View {
+        ZStack {
+            background
+            Image(style == .nighty ? "attn-logo-1" : "attn-logo", bundle: .module)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 43, height: 20)
+        }
+        .frame(width: 61, height: 61)
+        .clipShape(RoundedRectangle(cornerRadius: 18.5, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 18.5, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [.white.opacity(0.38), .black.opacity(0.2)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        }
+        .shadow(color: .black.opacity(0.14), radius: 2, y: 1)
+    }
+
+    @ViewBuilder
+    private var background: some View {
+        switch style {
+        case .signature:
+            LinearGradient(
+                colors: [
+                    Color(red: 0/255, green: 159/255, blue: 254/255),
+                    Color(red: 169/255, green: 239/255, blue: 228/255),
+                    Color(red: 249/255, green: 251/255, blue: 227/255)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        case .gradient:
+            LinearGradient(
+                stops: [
+                    .init(color: Color(red: 255/255, green: 214/255, blue: 26/255), location: 0),
+                    .init(color: Color(red: 255/255, green: 159/255, blue: 10/255), location: 0.52),
+                    .init(color: Color(red: 255/255, green: 59/255, blue: 48/255), location: 1)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case .pridey:
+            VStack(spacing: 0) {
+                Color(red: 255/255, green: 93/255, blue: 98/255)
+                Color(red: 255/255, green: 149/255, blue: 0/255)
+                Color(red: 255/255, green: 214/255, blue: 26/255)
+                Color(red: 52/255, green: 199/255, blue: 89/255)
+                Color(red: 64/255, green: 156/255, blue: 255/255)
+                Color(red: 175/255, green: 82/255, blue: 222/255)
+            }
+        case .nighty:
+            Color(red: 16/255, green: 16/255, blue: 18/255)
+        }
+    }
+}
+
+private struct AppIconRadio: View {
+    let isSelected: Bool
+
+    var body: some View {
+        Circle()
+            .stroke(isSelected ? Color.accentColor : Color(red: 229/255, green: 231/255, blue: 235/255), lineWidth: isSelected ? 2 : 1)
+            .frame(width: 18, height: 18)
+            .overlay {
+                if isSelected {
+                    Circle()
+                        .fill(Color.accentColor)
+                        .frame(width: 8, height: 8)
+                }
+            }
+            .accessibilityHidden(true)
+    }
+}
+
+private struct DashedSettingsDivider: View {
+    var body: some View {
+        Canvas { context, size in
+            var path = Path()
+            path.move(to: CGPoint(x: 0, y: 0.5))
+            path.addLine(to: CGPoint(x: size.width, y: 0.5))
+            context.stroke(
+                path,
+                with: .color(Color(red: 229/255, green: 231/255, blue: 235/255)),
+                style: StrokeStyle(lineWidth: 1, dash: [3, 3])
+            )
+        }
+        .frame(height: 1)
+        .accessibilityHidden(true)
     }
 }
 
