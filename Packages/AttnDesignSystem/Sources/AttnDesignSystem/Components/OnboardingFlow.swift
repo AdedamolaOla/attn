@@ -32,6 +32,15 @@ public struct OnboardingFlowView: View {
                 }
             case .results:
                 OnboardingResultsScreen {
+                    advance(to: .widget)
+                }
+            case .widget:
+                WidgetSetupView(
+                    onAdd: { advance(to: .notifications) },
+                    onSkip: { advance(to: .notifications) }
+                )
+            case .notifications:
+                NotificationSetupView {
                     onComplete()
                 }
             }
@@ -53,6 +62,8 @@ public struct OnboardingFlowView: View {
         case confirming
         case analyzing
         case results
+        case widget
+        case notifications
     }
 }
 
@@ -60,6 +71,7 @@ private let attnBlue = Color(red: 0.0, green: 159.0 / 255.0, blue: 1.0)
 private let attnCream = Color(red: 249.0 / 255.0, green: 251.0 / 255.0, blue: 227.0 / 255.0)
 private let attnInk = Color(red: 20.0 / 255.0, green: 22.0 / 255.0, blue: 28.0 / 255.0)
 
+// Figma 178:250 / M01 — arrival from the nearest edges, staggered 50–70ms.
 private struct OnboardingWelcomeScreen: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isVisible = false
@@ -234,6 +246,7 @@ private struct InboxPreviewCard: View {
     }
 }
 
+// Figma 178:271 / M02 — the account identity floats as one quiet 7.6s unit.
 private struct OnboardingConfirmScreen: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let onConfirm: () -> Void
@@ -358,6 +371,7 @@ private struct IdentityFloat: View {
     }
 }
 
+// Figma 178:292 / M03 — a living orb replaces a rigid loading spinner.
 private struct OnboardingAnalysisScreen: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var progress = 1
@@ -491,6 +505,7 @@ private struct AnalysisOrb: View {
     }
 }
 
+// Figma 178:313 / M04–M05 — result cards assemble, then hand off to the priority inbox.
 private struct OnboardingResultsScreen: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isVisible = false
@@ -728,6 +743,7 @@ private struct OnboardingSecondaryButton: View {
 /// Optional post-results teaching surface. It is intentionally reusable so the
 /// app can present it after the first result or from Settings without duplicating
 /// the widget education experience.
+// Figma 180:246 — glance-first education; Apple owns the actual widget placement UI.
 public struct WidgetSetupView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isVisible = false
@@ -793,6 +809,7 @@ public struct WidgetSetupView: View {
 /// Optional post-results permission education. We explain the value before
 /// invoking the system sheet and only request authorization in response to the
 /// explicit action.
+// Figma 180:267 — explain interruption value before requesting system permission.
 public struct NotificationSetupView: View {
     private let onComplete: () -> Void
 
