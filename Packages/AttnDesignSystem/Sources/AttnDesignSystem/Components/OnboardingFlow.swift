@@ -255,8 +255,10 @@ private struct OnboardingConfirmScreen: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [attnBlue, .white],
-                stops: [0, 0.70],
+                gradient: Gradient(stops: [
+                    Gradient.Stop(color: attnBlue, location: 0),
+                    Gradient.Stop(color: .white, location: 0.70)
+                ]),
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -380,8 +382,10 @@ private struct OnboardingAnalysisScreen: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [attnBlue, .white],
-                stops: [0, 0.70],
+                gradient: Gradient(stops: [
+                    Gradient.Stop(color: attnBlue, location: 0),
+                    Gradient.Stop(color: .white, location: 0.70)
+                ]),
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -519,8 +523,10 @@ private struct OnboardingResultsScreen: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [attnBlue.opacity(0.96), .white],
-                stops: [0, 0.80],
+                gradient: Gradient(stops: [
+                    Gradient.Stop(color: attnBlue.opacity(0.96), location: 0),
+                    Gradient.Stop(color: .white, location: 0.80)
+                ]),
                 startPoint: .top,
                 endPoint: .bottom
             )
