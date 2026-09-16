@@ -9,7 +9,7 @@ let package = Package(
         .library(name: "AttnDesignSystem", targets: ["AttnDesignSystem"])
     ],
     targets: [
-        .target(name: "AttnDesignSystem"),
+        .target(name: "AttnDesignSystem", resources: [.process("Resources")]),
         .testTarget(
             name: "AttnDesignSystemTests",
             dependencies: ["AttnDesignSystem"]
