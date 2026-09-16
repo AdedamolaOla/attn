@@ -256,7 +256,7 @@ private struct HelpFAQSection: Identifiable {
 }
 
 public struct HelpTopicsView: View {
-    @Environment(\\.dismiss) private var dismiss
+    @Environment(\.dismiss) private var dismiss
     @State private var expandedID: String? = "getting-started-what-is-attn"
 
     private let sections: [HelpFAQSection] = [
