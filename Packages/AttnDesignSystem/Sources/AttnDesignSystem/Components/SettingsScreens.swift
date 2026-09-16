@@ -243,32 +243,117 @@ private struct DashedSettingsDivider: View {
     }
 }
 
-public struct HelpTopicsView: View {
-    @Environment(\.dismiss) private var dismiss
-    @State private var expanded: String? = "What is attn?"
-    public init() {}
+private struct HelpFAQItem: Identifiable {
+    let id: String
+    let question: String
+    let answer: String
+}
 
-    private let topics = [
-        ("What is attn?", "attn helps identify the emails that deserve your attention and surfaces them as clear priorities."),
-        ("How does attn prioritize emails?", "attn looks for timing, consequences, trusted senders, and direct requests."),
-        ("How private is my data?", "Gmail access is read-only. Review Privacy & Data for details."),
-        ("How do notifications work?", "attn only interrupts you when timing and consequence make it worthwhile.")
+private struct HelpFAQSection: Identifiable {
+    let id: String
+    let title: String
+    let items: [HelpFAQItem]
+}
+
+public struct HelpTopicsView: View {
+    @Environment(\\.dismiss) private var dismiss
+    @State private var expandedID: String? = "getting-started-what-is-attn"
+
+    private let sections: [HelpFAQSection] = [
+        HelpFAQSection(
+            id: "getting-started",
+            title: "Getting Started",
+            items: [
+                HelpFAQItem(
+                    id: "getting-started-what-is-attn",
+                    question: "What is attn?",
+                    answer: "attn helps you identify emails that deserve your attention, so important things don't get buried in your inbox."
+                ),
+                HelpFAQItem(
+                    id: "getting-started-how-does-attn-work",
+                    question: "How does attn work?",
+                    answer: "attn looks for timing, consequences, trusted senders, and direct requests to surface potential priorities."
+                ),
+                HelpFAQItem(
+                    id: "getting-started-email-app",
+                    question: "Is attn an email app?",
+                    answer: "No. attn is an attention layer that helps you understand what deserves your attention. Your original email stays in Gmail."
+                ),
+                HelpFAQItem(
+                    id: "getting-started-check-daily",
+                    question: "Do I need to check attn every day?",
+                    answer: "No. attn keeps your priorities organized and only interrupts you when timing and consequence make it worthwhile."
+                ),
+                HelpFAQItem(
+                    id: "getting-started-updates",
+                    question: "How often does attn update?",
+                    answer: "attn refreshes your priorities as new information becomes available. You can always see when your view was last updated."
+                )
+            ]
+        ),
+        HelpFAQSection(
+            id: "email-prioritizing",
+            title: "Connecting your email & prioritizing",
+            items: [
+                HelpFAQItem(
+                    id: "email-prioritizing-why-connect",
+                    question: "Why do I need to connect my email?",
+                    answer: "Connecting your email is how attn finds information that may need your attention.\\n\\nWithout access to your email, attn can't identify or organize potential priorities for you."
+                ),
+                HelpFAQItem(
+                    id: "email-prioritizing-access",
+                    question: "What access does attn have to my email?",
+                    answer: "attn uses read-only Gmail access to identify signals that may need your attention. It cannot send, edit, or delete your emails."
+                ),
+                HelpFAQItem(
+                    id: "email-prioritizing-send-delete",
+                    question: "Can attn send or delete my emails?",
+                    answer: "No. attn has read-only access and cannot send, edit, or delete messages in your Gmail account."
+                ),
+                HelpFAQItem(
+                    id: "email-prioritizing-wrong",
+                    question: "What if attn gets something wrong?",
+                    answer: "You can mark a priority as important or not important. Your feedback helps attn improve future recommendations."
+                )
+            ]
+        )
     ]
+
+    public init() {}
 
     public var body: some View {
         VStack(spacing: 0) {
-            SettingsScreenHeader(title: "FAQs", dismiss: dismiss)
+            NotificationsSettingsHeader(title: "FAQs", dismiss: dismiss)
+
             ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Getting Started")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color.attnPrimary)
-                    ForEach(topics, id: \.0) { topic in
-                        faqRow(title: topic.0, answer: topic.1)
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(sections) { section in
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text(section.title)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(Color.black)
+
+                            VStack(spacing: 0) {
+                                ForEach(section.items) { item in
+                                    faqRow(item)
+                                }
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    .stroke(Color(red: 229/255, green: 231/255, blue: 235/255), lineWidth: 1)
+                            }
+                            .shadow(
+                                color: Color(red: 29/255, green: 41/255, blue: 61/255).opacity(0.02),
+                                radius: 0.25,
+                                x: 0,
+                                y: 1
+                            )
+                        }
+                        .padding(.horizontal, AttnSpacing.panel)
+                        .padding(.vertical, 8)
                     }
                 }
-                .padding(.horizontal, AttnSpacing.panel)
-                .padding(.top, 8)
                 .padding(.bottom, AttnSpacing.expanded)
             }
         }
@@ -276,35 +361,59 @@ public struct HelpTopicsView: View {
         .toolbar(.hidden, for: .navigationBar)
     }
 
-    private func faqRow(title: String, answer: String) -> some View {
-        VStack(spacing: 0) {
+    private func faqRow(_ item: HelpFAQItem) -> some View {
+        let isExpanded = expandedID == item.id
+
+        return VStack(spacing: 0) {
             Button {
-                withAnimation(.easeInOut(duration: 0.18)) {
-                    expanded = expanded == title ? nil : title
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    expandedID = isExpanded ? nil : item.id
                 }
             } label: {
-                HStack {
-                    Text(title)
+                HStack(spacing: 24) {
+                    Text(item.question)
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color.attnPrimary)
-                    Spacer()
-                    Image(systemName: expanded == title ? "chevron.up" : "chevron.down")
+                        .foregroundStyle(
+                            isExpanded
+                                ? Color(red: 16/255, green: 24/255, blue: 40/255)
+                                : Color(red: 74/255, green: 85/255, blue: 101/255)
+                        )
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color(red: 74/255, green: 85/255, blue: 101/255))
+                        .frame(width: 20, height: 20)
+                        .accessibilityHidden(true)
                 }
-                .padding(16)
-                .background(Color(red: 243/255, green: 244/255, blue: 246/255))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(
+                    isExpanded
+                        ? Color(red: 243/255, green: 244/255, blue: 246/255)
+                        : Color.white
+                )
             }
-            if expanded == title {
-                Text(answer)
+            .buttonStyle(.plain)
+            .accessibilityLabel(item.question)
+            .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
+
+            if isExpanded {
+                Text(item.answer)
                     .font(.system(size: 14))
-                    .foregroundStyle(Color.attnSecondary)
+                    .foregroundStyle(Color(red: 74/255, green: 85/255, blue: 101/255))
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(16)
+                    .background(Color.white)
             }
+
+            Rectangle()
+                .fill(Color(red: 229/255, green: 231/255, blue: 235/255))
+                .frame(height: 1)
+                .accessibilityHidden(true)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(red: 229/255, green: 231/255, blue: 235/255)))
     }
 }
 
