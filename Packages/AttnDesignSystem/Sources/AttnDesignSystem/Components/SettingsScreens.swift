@@ -242,7 +242,78 @@ private struct NotificationsSettingsHeader: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, AttnSpacing.panel)
         .padding(.top, 25)
-        .padding(.bottom, 16private struct SettingsCaption: View {
+        .padding(.bottom, 16)
+    }
+}
+
+private struct SettingsOption: View {
+    let title: String
+    let body: String
+    @Binding var isOn: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 12) {
+                Text(title)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(Color.black)
+                Spacer()
+                Toggle("", isOn: $isOn)
+                    .labelsHidden()
+                    .toggleStyle(AttnSwitchStyle())
+            }
+            Text(body)
+                .font(.system(size: 12))
+                .foregroundStyle(Color.attnSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
+
+private struct AttnSwitchStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.16)) {
+                configuration.isOn.toggle()
+            }
+        } label: {
+            Capsule()
+                .fill(configuration.isOn ? Color.green : Color(red: 229/255, green: 229/255, blue: 234/255))
+                .frame(width: 51, height: 31)
+                .overlay(alignment: configuration.isOn ? .trailing : .leading) {
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 27, height: 27)
+                        .padding(2)
+                        .shadow(color: .black.opacity(0.12), radius: 1, y: 1)
+                }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Setting toggle")
+        .accessibilityValue(configuration.isOn ? "On" : "Off")
+    }
+}
+
+private extension View {
+    func notificationsBackButton() -> some View {
+        glassEffect(.regular.interactive(), in: .circle)
+            .overlay {
+                Circle().strokeBorder(
+                    LinearGradient(
+                        stops: [
+                            .init(color: .white.opacity(0.65), location: 0),
+                            .init(color: .black.opacity(0.20), location: 0.35),
+                            .init(color: .black.opacity(0.16), location: 0.65),
+                            .init(color: .white.opacity(0.55), location: 1)
+                        ], startPoint: .top, endPoint: .bottom
+                    ), lineWidth: 0.5
+                )
+                .allowsHitTesting(false)
+            }
+    }
+}
+
+private struct SettingsCaption: View {
     let text: String
     init(_ text: String) { self.text = text }
     var body: some View {
