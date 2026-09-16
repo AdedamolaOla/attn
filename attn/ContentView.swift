@@ -1,21 +1,17 @@
-//
-//  ContentView.swift
-//  attn
-//
-//  Created by Adedamola on 9/14/26.
-//
-
 import SwiftUI
+import AttnDesignSystem
 
 struct ContentView: View {
+    @AppStorage("attn.onboardingCompleted") private var onboardingCompleted = false
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        if onboardingCompleted {
+            PriorityCardShowcase()
+        } else {
+            OnboardingFlowView {
+                onboardingCompleted = true
+            }
         }
-        .padding()
     }
 }
 
