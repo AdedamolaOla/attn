@@ -40,7 +40,7 @@ public struct ProfileView: View {
             }
         }
         .padding(.horizontal, AttnSpacing.panel)
-        .padding(.top, 50)
+        .padding(.top, 38)
         .padding(.bottom, AttnSpacing.section)
     }
 
@@ -57,7 +57,10 @@ public struct ProfileView: View {
                         .padding(.horizontal, 9).padding(.vertical, 6)
                         .background(Color(red: 229/255, green: 247/255, blue: 235/255), in: .capsule)
                 }
-                Text("Liamoliver@gmail.com").font(.system(size: 13)).foregroundStyle(Color(red: 119 / 255, green: 118 / 255, blue: 126 / 255))
+                Text("Liamoliver@gmail.com")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color(red: 119.0 / 255.0, green: 118.0 / 255.0, blue: 126.0 / 255.0))
+                    .tint(Color(red: 119.0 / 255.0, green: 118.0 / 255.0, blue: 126.0 / 255.0))
             }
         }
         .padding(16).frame(maxWidth: .infinity, alignment: .leading)
@@ -66,11 +69,11 @@ public struct ProfileView: View {
 
     private var settingsRows: some View {
         VStack(spacing: 0) {
-            settingRow("bell.svg", "Notifications & Widget"); divider
-            settingRow("attn logo-1.svg", "App Icon"); divider
-            settingRow("question-circle.svg", "FAQs"); divider
-            settingRow("annotation.svg", "Send Feedback"); divider
-            settingRow("attn logo.svg", "About")
+            settingRow("bell", "Notifications & Widget"); divider
+            settingRow("attn-logo-1", "App Icon"); divider
+            settingRow("question-circle", "FAQs"); divider
+            settingRow("annotation", "Send Feedback"); divider
+            settingRow("attn-logo", "About")
         }
     }
 
@@ -85,12 +88,18 @@ public struct ProfileView: View {
     private func settingRow(_ icon: String, _ title: String) -> some View {
         Button {} label: {
             HStack(spacing: 14) {
-                Image(decorative: icon, bundle: .module).frame(width: 32, height: 32)
+                Image(icon, bundle: .module)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 32, height: 32)
                     .background(Color(red: 251/255, green: 251/255, blue: 251/255), in: .rect(cornerRadius: 8))
                 Text(title).font(.system(size: 16, weight: .medium))
                     .foregroundStyle(Color(red: 27/255, green: 27/255, blue: 27/255))
                 Spacer()
-                Image(decorative: "chevron-right.svg", bundle: .module).frame(width: 20, height: 20)
+                Image("chevron-right", bundle: .module)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 20, height: 20)
             }
             .padding(.horizontal, AttnSpacing.panel).padding(.vertical, 12).frame(minHeight: 56)
         }.buttonStyle(.plain)
