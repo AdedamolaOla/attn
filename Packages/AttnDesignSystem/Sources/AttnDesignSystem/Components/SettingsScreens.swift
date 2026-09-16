@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct SettingsNotificationsWidgetsView: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var homeWidget = true
     @State private var notifications = true
     @State private var dynamicIsland = true
 
@@ -9,42 +10,35 @@ public struct SettingsNotificationsWidgetsView: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            SettingsScreenHeader(title: "Notifications & Widget", dismiss: dismiss)
+            NotificationsSettingsHeader(title: "Notifications & Widget", dismiss: dismiss)
             ScrollView {
-                VStack(alignment: .leading, spacing: AttnSpacing.section) {
-                    Image(systemName: "bell.badge.fill")
-                        .font(.system(size: 42, weight: .regular))
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 12)
+                VStack(alignment: .leading, spacing: 24) {
+                    ZStack {
+                        Color(red: 251/255, green: 251/255, blue: 251/255)
+                        Image("attn-widget", bundle: .module)
+                            .resizable()
+                            .scaledToFit()
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 18)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
 
-                    Text("Notifications")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.attnPrimary)
-                    SettingsToggleRow(title: "Critical alerts", isOn: $notifications)
-                    SettingsCaption("attn only interrupts you when missing something could have a real consequence.")
-
-                    SettingsToggleRow(title: "Dynamic Island", isOn: $dynamicIsland)
-                    SettingsCaption("Show a countdown when a deadline is near.")
-
-                    Text("Home Screen Widget")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(Color.attnPrimary)
-                        .padding(.top, 8)
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.black)
-                        .frame(height: 150)
-                        .overlay(alignment: .leading) {
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("Today").font(.system(size: 14, weight: .semibold)).foregroundStyle(.white)
-                                Text("• Credit card payment — Due today")
-                                Text("• Flight check-in — Opens in 3h")
-                            }
-                            .font(.system(size: 12))
-                            .foregroundStyle(.white.opacity(0.9))
-                            .padding(20)
-                        }
-                    SettingsCaption("See your most important priorities without opening attn.")
+                    SettingsOption(
+                        title: "Home Screen Widget",
+                        body: "Adding the widget to your Home Screen helps you see your most important priorities without opening the app.",
+                        isOn: $homeWidget
+                    )
+                    SettingsOption(
+                        title: "Notifications",
+                        body: "ATTN only interrupts you when missing something could have a real consequence.",
+                        isOn: $notifications
+                    )
+                    SettingsOption(
+                        title: "Dynamic Island",
+                        body: "Show a countdown when a deadline is near",
+                        isOn: $dynamicIsland
+                    )
                 }
                 .padding(.horizontal, AttnSpacing.panel)
                 .padding(.bottom, AttnSpacing.expanded)
@@ -226,45 +220,29 @@ public struct SettingsAboutLegalView: View {
     }
 }
 
-private struct SettingsScreenHeader: View {
+private struct NotificationsSettingsHeader: View {
     let title: String
     let dismiss: DismissAction
 
     var body: some View {
-        ZStack {
-            Text(title)
-                .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(Color.attnPrimary)
-            HStack {
-                Button { dismiss() } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .frame(width: 50, height: 50)
-                }
-                .buttonStyle(.plain)
-                .glassEffect(.regular.interactive(), in: .circle)
-                Spacer()
+        VStack(alignment: .leading, spacing: 24) {
+            Button { dismiss() } label: {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 18, weight: .medium))
+                    .frame(width: 50, height: 50)
             }
+            .buttonStyle(.plain)
+            .notificationsBackButton()
+            .accessibilityLabel("Back")
+
+            Text(title)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(Color.attnPrimary)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, AttnSpacing.panel)
         .padding(.top, 25)
-        .padding(.bottom, AttnSpacing.section)
-    }
-}
-
-private struct SettingsToggleRow: View {
-    let title: String
-    @Binding var isOn: Bool
-
-    var body: some View {
-        Toggle(title, isOn: $isOn)
-            .font(.system(size: 16, weight: .medium))
-            .tint(.green)
-            .padding(.vertical, 4)
-    }
-}
-
-private struct SettingsCaption: View {
+        .padding(.bottom, 16private struct SettingsCaption: View {
     let text: String
     init(_ text: String) { self.text = text }
     var body: some View {
