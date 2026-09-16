@@ -147,25 +147,28 @@ private struct AppIconTile: View {
     var body: some View {
         ZStack {
             background
-            Image(style == .nighty ? "attn-logo-1" : "attn-logo", bundle: .module)
+            Image("attn-app-icon-logo", bundle: .module)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 43, height: 20)
+                .frame(width: 43, height: 21)
         }
         .frame(width: 61, height: 61)
         .clipShape(RoundedRectangle(cornerRadius: 18.5, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 18.5, style: .continuous)
-                .stroke(
-                    LinearGradient(
-                        colors: [.white.opacity(0.38), .black.opacity(0.2)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
+                .stroke(Color.black.opacity(0.25), lineWidth: 2)
+                .blur(radius: 1)
+                .offset(x: 0, y: -2)
+                .mask(RoundedRectangle(cornerRadius: 18.5, style: .continuous))
         }
-        .shadow(color: .black.opacity(0.14), radius: 2, y: 1)
+        .overlay {
+            RoundedRectangle(cornerRadius: 18.5, style: .continuous)
+                .stroke(Color.white.opacity(0.36), lineWidth: 2)
+                .blur(radius: 1.3)
+                .offset(x: 2, y: -2)
+                .mask(RoundedRectangle(cornerRadius: 18.5, style: .continuous))
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 18.5, style: .continuous))
     }
 
     @ViewBuilder
@@ -175,7 +178,6 @@ private struct AppIconTile: View {
             LinearGradient(
                 colors: [
                     Color(red: 0/255, green: 159/255, blue: 254/255),
-                    Color(red: 169/255, green: 239/255, blue: 228/255),
                     Color(red: 249/255, green: 251/255, blue: 227/255)
                 ],
                 startPoint: .top,
@@ -184,9 +186,9 @@ private struct AppIconTile: View {
         case .gradient:
             LinearGradient(
                 stops: [
-                    .init(color: Color(red: 255/255, green: 214/255, blue: 26/255), location: 0),
-                    .init(color: Color(red: 255/255, green: 159/255, blue: 10/255), location: 0.52),
-                    .init(color: Color(red: 255/255, green: 59/255, blue: 48/255), location: 1)
+                    .init(color: Color(red: 255/255, green: 76/255, blue: 0/255), location: 0),
+                    .init(color: Color(red: 255/255, green: 222/255, blue: 9/255), location: 0.5),
+                    .init(color: Color(red: 31/255, green: 214/255, blue: 255/255), location: 1)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
