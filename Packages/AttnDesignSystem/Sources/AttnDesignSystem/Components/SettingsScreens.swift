@@ -257,7 +257,10 @@ private struct HelpFAQSection: Identifiable {
 
 public struct HelpTopicsView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var expandedID: String? = "getting-started-what-is-attn"
+    @State private var expandedIDs: Set<String> = [
+        "getting-started-what-is-attn",
+        "email-prioritizing-why-connect"
+    ]
 
     private let sections: [HelpFAQSection] = [
         HelpFAQSection(
@@ -362,12 +365,16 @@ public struct HelpTopicsView: View {
     }
 
     private func faqRow(_ item: HelpFAQItem) -> some View {
-        let isExpanded = expandedID == item.id
+        let isExpanded = expandedIDs.contains(item.id)
 
         return VStack(spacing: 0) {
             Button {
                 withAnimation(.easeInOut(duration: 0.15)) {
-                    expandedID = isExpanded ? nil : item.id
+                    if isExpanded {
+                        expandedIDs.remove(item.id)
+                    } else {
+                        expandedIDs.insert(item.id)
+                    }
                 }
             } label: {
                 HStack(spacing: 24) {
