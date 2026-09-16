@@ -53,7 +53,7 @@ public struct PriorityCardShowcase: View {
                 Button("OK", role: .cancel) {}
             } message: { Text(notice) }
         }
-        .sheet(isPresented: $showingProfile) { ProfileView() }
+        .fullScreenCover(isPresented: $showingProfile) { ProfileView() }
     }
 
     private func sample(
