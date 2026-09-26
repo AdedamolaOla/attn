@@ -11,6 +11,7 @@ public enum TodaySection: String, CaseIterable, Identifiable, Sendable {
 public struct TodayBriefingHeader: View {
     private let date: Date
     private let onProfile: () -> Void
+    private let onMascot: () -> Void
     @Binding private var selection: TodaySection
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -18,11 +19,16 @@ public struct TodayBriefingHeader: View {
     @ScaledMetric(relativeTo: .callout) private var tabHeight = 56
     @Namespace private var indicator
 
-    public init(date: Date = .now, selection: Binding<TodaySection>,
-                onProfile: @escaping () -> Void) {
+    public init(
+        date: Date = .now,
+        selection: Binding<TodaySection>,
+        onProfile: @escaping () -> Void,
+        onMascot: @escaping () -> Void = {}
+    ) {
         self.date = date
         self._selection = selection
         self.onProfile = onProfile
+        self.onMascot = onMascot
     }
 
     private var dateLabel: String {
@@ -49,34 +55,39 @@ public struct TodayBriefingHeader: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                Button(action: onProfile) {
-                    Image(systemName: "person.fill")
-                        .font(.system(size: 19))
-                        .foregroundStyle(AttnColors.surfacePriority)
-                        .frame(width: 50, height: 50)
+                HStack(spacing: AttnSpacing.compact) {
+                    // The mascot is the direct entry point to the new standby surface.
+                    AttnMascotBadge(size: 50, action: onMascot)
+
+                    Button(action: onProfile) {
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 19))
+                            .foregroundStyle(AttnColors.surfacePriority)
+                            .frame(width: 50, height: 50)
+                    }
+                    .buttonStyle(.plain)
+                    .glassEffect(.regular.interactive(), in: .circle)
+                    .overlay {
+                        // A fine refractive rim keeps pale glass legible on white.
+                        Circle()
+                            .strokeBorder(
+                                LinearGradient(
+                                    stops: [
+                                        .init(color: .white.opacity(0.65), location: 0),
+                                        .init(color: .black.opacity(0.20), location: 0.35),
+                                        .init(color: .black.opacity(0.16), location: 0.65),
+                                        .init(color: .white.opacity(0.55), location: 1)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                ),
+                                lineWidth: 0.5
+                            )
+                            .allowsHitTesting(false)
+                            .accessibilityHidden(true)
+                    }
+                    .accessibilityLabel("Profile")
                 }
-                .buttonStyle(.plain)
-                .glassEffect(.regular.interactive(), in: .circle)
-                .overlay {
-                    // A fine refractive rim keeps pale glass legible on white.
-                    Circle()
-                        .strokeBorder(
-                            LinearGradient(
-                                stops: [
-                                    .init(color: .white.opacity(0.65), location: 0),
-                                    .init(color: .black.opacity(0.20), location: 0.35),
-                                    .init(color: .black.opacity(0.16), location: 0.65),
-                                    .init(color: .white.opacity(0.55), location: 1)
-                                ],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            ),
-                            lineWidth: 0.5
-                        )
-                        .allowsHitTesting(false)
-                        .accessibilityHidden(true)
-                }
-                .accessibilityLabel("Profile")
             }
 
             HStack(spacing: 0) {
