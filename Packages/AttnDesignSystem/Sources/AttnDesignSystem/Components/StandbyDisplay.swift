@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Full-screen standby surface opened from the Home mascot.
 ///
@@ -29,6 +30,36 @@ public struct StandbyDisplayView: View {
         .background(.black)
         .ignoresSafeArea()
         .statusBarHidden(true)
+        .onAppear {
+            StandbyOrientation.requestLandscape()
+        }
+        .onDisappear {
+            StandbyOrientation.requestPortrait()
+        }
+    }
+}
+
+private enum StandbyOrientation {
+    static func requestLandscape() {
+        guard let scene = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first else { return }
+        if #available(iOS 16.0, *) {
+            scene.requestGeometryUpdate(
+                UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: .landscape)
+            )
+        }
+    }
+
+    static func requestPortrait() {
+        guard let scene = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first else { return }
+        if #available(iOS 16.0, *) {
+            scene.requestGeometryUpdate(
+                UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: .portrait)
+            )
+        }
     }
 }
 
@@ -153,7 +184,8 @@ private struct StandbyDisplayCanvas: View {
         }
         .padding(.horizontal, 22)
         .padding(.vertical, 20)
-        .background(ink.opacity(0.96), in: RoundedRectangle(cornerRadius: 34, style: .continuous))
+        // The priority rows remain separate raised cards. The Figma canvas does
+        // not group them inside one enclosing black container.
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Six things need attention")
     }
@@ -200,21 +232,10 @@ private struct FloatingStandbyMascot: View {
     }
 
     private func mascot(offset: CGSize, scale: CGFloat) -> some View {
-        ZStack(alignment: .topTrailing) {
-            AttnMascot(width: 360)
-                .offset(offset)
-                .scaleEffect(scale)
-                .frame(maxWidth: .infinity, alignment: .center)
-
-            Text("?")
-                .font(.system(size: 25, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 28 / 255, green: 28 / 255, blue: 30 / 255))
-                .frame(width: 62, height: 62)
-                .background(Color.white.opacity(0.84), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .rotationEffect(.degrees(1))
-                .offset(x: -6, y: 6)
-        }
-        .frame(maxWidth: .infinity)
+        AttnMascotQuestion(width: 360)
+            .offset(offset)
+            .scaleEffect(scale)
+            .frame(maxWidth: .infinity, alignment: .center)
     }
 }
 
