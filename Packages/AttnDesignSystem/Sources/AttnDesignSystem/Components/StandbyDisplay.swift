@@ -164,16 +164,30 @@ private struct StandbyDisplayCanvas: View {
                         timingColor: Color(red: 255 / 255, green: 69 / 255, blue: 58 / 255)
                     )
                     StandbyPriorityRow(
-                        icon: "▤",
-                        iconBackground: Color(red: 229 / 255, green: 238 / 255, blue: 232 / 255),
+                        icon: "📑",
+                        iconBackground: Color(red: 201 / 255, green: 247 / 255, blue: 255 / 255),
                         title: "Tax filing notice",
                         timing: "Closes in 1 hour",
                         timingColor: Color(red: 255 / 255, green: 69 / 255, blue: 58 / 255)
                     )
                     StandbyPriorityRow(
-                        icon: "◎",
-                        iconBackground: Color(red: 247 / 255, green: 239 / 255, blue: 255 / 255),
-                        title: "Interview",
+                        icon: "🖌️",
+                        iconBackground: Color(red: 189 / 255, green: 255 / 255, blue: 220 / 255),
+                        title: "Figma edit access req...",
+                        timing: "2days ago",
+                        timingColor: .white.opacity(0.68)
+                    )
+                    StandbyPriorityRow(
+                        icon: "☎️",
+                        iconBackground: Color(red: 189 / 255, green: 255 / 255, blue: 220 / 255),
+                        title: "Product Design Interv...",
+                        timing: "In 8 hours",
+                        timingColor: .white.opacity(0.68)
+                    )
+                    StandbyPriorityRow(
+                        icon: "☎️",
+                        iconBackground: Color(red: 189 / 255, green: 255 / 255, blue: 220 / 255),
+                        title: "Product Design Interview",
                         timing: "Tomorrow · 9:30 AM",
                         timingColor: .white.opacity(0.68)
                     )
