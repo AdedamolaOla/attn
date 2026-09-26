@@ -8,9 +8,9 @@ private func finitePositive(_ value: CGFloat, fallback: CGFloat = 1) -> CGFloat 
 
 /// Full-screen standby surface opened from the Home mascot.
 ///
-/// The Figma canvas is 1328 × 616 and landscape. On a portrait iPhone we
-/// rotate the same canvas rather than reflowing it into a portrait dashboard;
-/// this preserves the intended left-rail / right-priority composition.
+/// The Figma canvas is 1328 × 616 and landscape. Standby requests a
+/// landscape scene orientation so the left-rail / right-priority composition
+/// uses the full display without rotating content inside a portrait canvas.
 public struct StandbyDisplayView: View {
     @Environment(\.dismiss) private var dismiss
 
