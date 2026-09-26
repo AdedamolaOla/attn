@@ -37,7 +37,7 @@ public struct AttnMascot: View {
     }
 }
 
-/// The compact circular Home-nav control. The mascot is a real button so the
+/// The standby mascot state with the small question bubble from Figma.\npublic struct AttnMascotQuestion: View {\n    private let width: CGFloat\n    private let accessibilityText: String\n\n    public init(width: CGFloat = 360, accessibilityLabel: String = "attn mascot, standby state") {\n        self.width = width\n        self.accessibilityText = accessibilityLabel\n    }\n\n    public var body: some View {\n        Group {\n            if let image = AttnMascotImage.question {\n                Image(uiImage: image)\n                    .resizable()\n                    .interpolation(.high)\n                    .scaledToFit()\n            } else {\n                AttnMascot(width: width, accessibilityLabel: accessibilityText)\n            }\n        }\n        .frame(width: width, height: width * 343 / 629)\n        .accessibilityElement(children: .ignore)\n        .accessibilityLabel(accessibilityText)\n        .accessibilityAddTraits(.isImage)\n    }\n}\n\n/// The compact circular Home-nav control. The mascot is a real button so the
 /// standby experience is discoverable without adding another tab or badge.
 public struct AttnMascotBadge: View {
     private let size: CGFloat
