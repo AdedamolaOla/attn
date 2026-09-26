@@ -71,7 +71,6 @@ private struct StandbyDisplayCanvas: View {
 
     private let blue = Color(red: 0, green: 159 / 255, blue: 254 / 255)
     private let cream = Color(red: 249 / 255, green: 251 / 255, blue: 227 / 255)
-    private let ink = Color(red: 16 / 255, green: 16 / 255, blue: 18 / 255)
 
     var body: some View {
         GeometryReader { proxy in
