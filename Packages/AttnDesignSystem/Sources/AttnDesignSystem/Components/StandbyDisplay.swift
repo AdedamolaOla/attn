@@ -21,9 +21,11 @@ public struct StandbyDisplayView: View {
                     onDismiss: { dismiss() }
                 )
             }
+            // Preview and transition passes can briefly report a zero-sized
+            // geometry. Keep the rotated canvas dimensions strictly positive.
             .frame(
-                width: isPortrait ? proxy.size.height : proxy.size.width,
-                height: isPortrait ? proxy.size.width : proxy.size.height
+                width: max(1, isPortrait ? proxy.size.height : proxy.size.width),
+                height: max(1, isPortrait ? proxy.size.width : proxy.size.height)
             )
             .rotationEffect(isPortrait ? .degrees(90) : .zero)
         }
@@ -83,10 +85,10 @@ private struct StandbyDisplayCanvas: View {
 
                 HStack(spacing: 22) {
                     leftRail
-                        .frame(width: proxy.size.width * 0.39)
+                        .frame(width: max(1, proxy.size.width * 0.39))
 
                     attentionColumn
-                        .frame(width: proxy.size.width * 0.61 - 22)
+                        .frame(width: max(1, proxy.size.width * 0.61 - 22))
                 }
                 .padding(24)
             }
