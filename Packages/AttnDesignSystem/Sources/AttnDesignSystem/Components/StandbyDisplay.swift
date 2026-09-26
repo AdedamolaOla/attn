@@ -18,21 +18,16 @@ public struct StandbyDisplayView: View {
 
     public var body: some View {
         GeometryReader { proxy in
-            let isPortrait = proxy.size.width < proxy.size.height
-
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 StandbyDisplayCanvas(
                     date: context.date,
                     onDismiss: { dismiss() }
                 )
             }
-            // Preview and transition passes can briefly report a zero-sized
-            // geometry. Keep the rotated canvas dimensions strictly positive.
-            .frame(
-                width: finitePositive(isPortrait ? proxy.size.height : proxy.size.width),
-                height: finitePositive(isPortrait ? proxy.size.width : proxy.size.height)
-            )
-            .rotationEffect(isPortrait ? .degrees(90) : .zero)
+            // Let the window scene perform the orientation change. Do not
+            // rotate the SwiftUI content inside a portrait canvas, because
+            // that clips the landscape composition when rotation is denied.
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(.black)
         .ignoresSafeArea()
@@ -48,25 +43,38 @@ public struct StandbyDisplayView: View {
 
 private enum StandbyOrientation {
     static func requestLandscape() {
-        guard let scene = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .first else { return }
-        if #available(iOS 16.0, *) {
-            scene.requestGeometryUpdate(
-                UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: .landscape)
-            )
-        }
+        request(.landscape, fallback: .landscapeRight)
     }
 
     static func requestPortrait() {
-        guard let scene = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .first else { return }
-        if #available(iOS 16.0, *) {
-            scene.requestGeometryUpdate(
-                UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: .portrait)
-            )
+        request(.portrait, fallback: .portrait)
+    }
+
+    private static func request(
+        _ mask: UIInterfaceOrientationMask,
+        fallback orientation: UIInterfaceOrientation
+    ) {
+        DispatchQueue.main.async {
+            guard let scene = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .first else { return }
+
+            if #available(iOS 16.0, *) {
+                scene.requestGeometryUpdate(
+                    UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: mask),
+                    errorHandler: { _ in
+                        forceDeviceOrientation(orientation)
+                    }
+                )
+            } else {
+                forceDeviceOrientation(orientation)
+            }
         }
+    }
+
+    private static func forceDeviceOrientation(_ orientation: UIInterfaceOrientation) {
+        UIDevice.current.setValue(orientation.rawValue, forKey: "orientation")
+        UIViewController.attemptRotationToDeviceOrientation()
     }
 }
 
