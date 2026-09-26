@@ -14,7 +14,9 @@ private func finitePositive(_ value: CGFloat, fallback: CGFloat = 1) -> CGFloat 
 public struct StandbyDisplayView: View {
     @Environment(\.dismiss) private var dismiss
 
-    public init() {}
+    public init() {
+        AttnAgbalumoFont.register()
+    }
 
     public var body: some View {
         GeometryReader { proxy in
@@ -89,6 +91,11 @@ private struct StandbyDisplayCanvas: View {
 
     var body: some View {
         GeometryReader { proxy in
+            let horizontalInset: CGFloat = 24
+            let verticalInset: CGFloat = 24
+            let contentWidth = finitePositive(proxy.size.width - (horizontalInset * 2))
+            let contentHeight = finitePositive(proxy.size.height - (verticalInset * 2))
+
             ZStack {
                 LinearGradient(
                     colors: [blue, cream],
@@ -98,12 +105,14 @@ private struct StandbyDisplayCanvas: View {
 
                 HStack(spacing: 22) {
                     leftRail
-                        .frame(width: finitePositive(proxy.size.width * 0.39))
+                        .frame(width: finitePositive(contentWidth * 0.39))
 
                     attentionColumn
-                        .frame(width: finitePositive(proxy.size.width * 0.61 - 22))
+                        .frame(width: finitePositive(contentWidth * 0.61 - 22))
                 }
-                .padding(24)
+                .frame(width: contentWidth, height: contentHeight, alignment: .topLeading)
+                .padding(.horizontal, horizontalInset)
+                .padding(.vertical, verticalInset)
             }
             .clipShape(RoundedRectangle(cornerRadius: 44, style: .continuous))
         }
@@ -115,7 +124,7 @@ private struct StandbyDisplayCanvas: View {
         VStack(spacing: 0) {
             VStack(spacing: 8) {
                 Text(timeLabel)
-                    .font(.system(size: 72, weight: .bold, design: .rounded))
+                    .font(.custom(AttnAgbalumoFont.name, size: 72))
                     .tracking(-3)
                     .foregroundStyle(.white)
                     .monospacedDigit()
@@ -141,28 +150,28 @@ private struct StandbyDisplayCanvas: View {
     }
 
     private var attentionColumn: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack(alignment: .center) {
-                Text("Needs attn. (6)")
-                    .font(.system(size: 28, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.72)
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 18) {
+                HStack(alignment: .center) {
+                    Text("Needs attn. (6)")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
 
-                Spacer(minLength: 12)
+                    Spacer(minLength: 12)
 
-                Button(action: onDismiss) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.76))
-                        .frame(width: 42, height: 42)
-                        .background(.white.opacity(0.10), in: Circle())
+                    Button(action: onDismiss) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.76))
+                            .frame(width: 42, height: 42)
+                            .background(.white.opacity(0.10), in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Close standby display")
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Close standby display")
-            }
 
-            ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
                     StandbyPriorityRow(
                         icon: "$",
@@ -209,11 +218,11 @@ private struct StandbyDisplayCanvas: View {
                 }
                 .padding(.bottom, 8)
             }
+            .padding(.horizontal, 22)
+            .padding(.vertical, 20)
         }
-        .padding(.horizontal, 22)
-        .padding(.vertical, 20)
-        // The priority rows remain separate raised cards. The Figma canvas does
-        // not group them inside one enclosing black container.
+        // The heading is intentionally inside the same scroll container as
+        // the priority cards so the list moves as one continuous surface.
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Six things need attention")
     }
