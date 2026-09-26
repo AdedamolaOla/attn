@@ -95,6 +95,17 @@ private struct StandbyDisplayCanvas: View {
             let verticalInset: CGFloat = 24
             let contentWidth = finitePositive(proxy.size.width - (horizontalInset * 2))
             let contentHeight = finitePositive(proxy.size.height - (verticalInset * 2))
+            let railWidth = finitePositive(contentWidth * 0.39)
+            let attentionWidth = finitePositive(contentWidth - railWidth - 22)
+            let mascotWidth = finitePositive(
+                min(
+                    360,
+                    min(
+                        railWidth - 8,
+                        contentHeight * 0.52 * (CGFloat(629) / CGFloat(343))
+                    )
+                )
+            )
 
             ZStack {
                 LinearGradient(
@@ -104,11 +115,11 @@ private struct StandbyDisplayCanvas: View {
                 )
 
                 HStack(spacing: 22) {
-                    leftRail
-                        .frame(width: finitePositive(contentWidth * 0.39))
+                    leftRail(mascotWidth: mascotWidth)
+                        .frame(width: railWidth)
 
                     attentionColumn
-                        .frame(width: finitePositive(contentWidth * 0.61 - 22))
+                        .frame(width: attentionWidth)
                 }
                 .frame(width: contentWidth, height: contentHeight, alignment: .topLeading)
                 .padding(.horizontal, horizontalInset)
@@ -120,14 +131,13 @@ private struct StandbyDisplayCanvas: View {
         .accessibilityLabel("Standby display")
     }
 
-    private var leftRail: some View {
+    private func leftRail(mascotWidth: CGFloat) -> some View {
         VStack(spacing: 0) {
             VStack(spacing: 8) {
                 Text(timeLabel)
                     .font(.custom(AttnAgbalumoFont.name, size: 72))
                     .tracking(-3)
                     .foregroundStyle(.white)
-                    .monospacedDigit()
                     .minimumScaleFactor(0.65)
 
                 Text(dateLabel)
@@ -139,7 +149,7 @@ private struct StandbyDisplayCanvas: View {
 
             Spacer(minLength: 10)
 
-            FloatingStandbyMascot(reduceMotion: reduceMotion)
+            FloatingStandbyMascot(width: mascotWidth, reduceMotion: reduceMotion)
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 4)
                 .padding(.bottom, 2)
@@ -245,6 +255,7 @@ private struct StandbyDisplayCanvas: View {
 }
 
 private struct FloatingStandbyMascot: View {
+    let width: CGFloat
     let reduceMotion: Bool
 
     var body: some View {
@@ -269,7 +280,7 @@ private struct FloatingStandbyMascot: View {
     }
 
     private func mascot(offset: CGSize, scale: CGFloat) -> some View {
-        AttnMascotQuestion(width: 360)
+        AttnMascotQuestion(width: width)
             .offset(offset)
             .scaleEffect(scale)
             .frame(maxWidth: .infinity, alignment: .center)
