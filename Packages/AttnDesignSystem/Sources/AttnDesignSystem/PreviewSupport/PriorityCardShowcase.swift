@@ -7,6 +7,7 @@ public struct PriorityCardShowcase: View {
     @State private var notice = ""
     @State private var showingNotice = false
     @State private var showingProfile = false
+    @State private var showingStandby = false
 
     public init() {}
 
@@ -18,7 +19,8 @@ public struct PriorityCardShowcase: View {
                         TodayBriefingHeader(
                             date: context.date,
                             selection: $selection,
-                            onProfile: { showingProfile = true }
+                            onProfile: { showingProfile = true },
+                            onMascot: { showingStandby = true }
                         )
                     }
                     .padding(.bottom, 8)
@@ -54,6 +56,7 @@ public struct PriorityCardShowcase: View {
             } message: { Text(notice) }
         }
         .fullScreenCover(isPresented: $showingProfile) { ProfileView() }
+        .fullScreenCover(isPresented: $showingStandby) { StandbyDisplayView() }
     }
 
     private func sample(
