@@ -1,6 +1,11 @@
 import SwiftUI
 import UIKit
 
+private func finitePositive(_ value: CGFloat, fallback: CGFloat = 1) -> CGFloat {
+    guard value.isFinite, value > 0 else { return fallback }
+    return value
+}
+
 /// Full-screen standby surface opened from the Home mascot.
 ///
 /// The Figma canvas is 1328 × 616 and landscape. On a portrait iPhone we
@@ -24,8 +29,8 @@ public struct StandbyDisplayView: View {
             // Preview and transition passes can briefly report a zero-sized
             // geometry. Keep the rotated canvas dimensions strictly positive.
             .frame(
-                width: max(1, isPortrait ? proxy.size.height : proxy.size.width),
-                height: max(1, isPortrait ? proxy.size.width : proxy.size.height)
+                width: finitePositive(isPortrait ? proxy.size.height : proxy.size.width),
+                height: finitePositive(isPortrait ? proxy.size.width : proxy.size.height)
             )
             .rotationEffect(isPortrait ? .degrees(90) : .zero)
         }
@@ -85,10 +90,10 @@ private struct StandbyDisplayCanvas: View {
 
                 HStack(spacing: 22) {
                     leftRail
-                        .frame(width: max(1, proxy.size.width * 0.39))
+                        .frame(width: finitePositive(proxy.size.width * 0.39))
 
                     attentionColumn
-                        .frame(width: max(1, proxy.size.width * 0.61 - 22))
+                        .frame(width: finitePositive(proxy.size.width * 0.61 - 22))
                 }
                 .padding(24)
             }
