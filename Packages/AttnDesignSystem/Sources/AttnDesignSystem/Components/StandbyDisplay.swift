@@ -104,7 +104,7 @@ private struct StandbyDisplayCanvas: View {
             let mascotWidth = finitePositive(
                 min(
                     columnWidth - 16,
-                    (contentHeight - 128) * (CGFloat(629) / CGFloat(343))
+                    contentHeight * 0.42
                 )
             )
 
@@ -140,9 +140,7 @@ private struct StandbyDisplayCanvas: View {
     }
 
     private func leftRail(mascotWidth: CGFloat) -> some View {
-        // The source mascot artwork ends mid-body. Keep the clock in its
-        // centered position, but let the artwork bleed below the display edge
-        // so its raster boundary can never appear as a line above the bezel.
+        // Keep the clock and full portrait mascot inside the left rail.
         VStack(spacing: 0) {
             Spacer(minLength: 0)
 
@@ -165,7 +163,6 @@ private struct StandbyDisplayCanvas: View {
 
             FloatingStandbyMascot(width: mascotWidth, reduceMotion: reduceMotion)
                 .frame(width: mascotWidth)
-                .offset(y: 20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .accessibilityElement(children: .combine)
