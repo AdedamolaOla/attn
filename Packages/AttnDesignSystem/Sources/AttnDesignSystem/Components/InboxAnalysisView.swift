@@ -55,93 +55,43 @@ public struct InboxAnalysisView: View {
     }
 
     private func analysisOrb(progress: Int, phase: TimeInterval) -> some View {
-        ZStack {
-            Circle()
-                .fill(
-                    LinearGradient(
-                        stops: [
-                            .init(color: Color(hex: 0xFFD600), location: 0),
-                            .init(color: Color(hex: 0xFFFFFF), location: 0.50),
-                            .init(color: Color(hex: 0x009FFE), location: 1)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
+        let driftX = CGFloat(sin(phase * 0.72)) * 0.035
+        let driftY = CGFloat(cos(phase * 0.58)) * 0.035
+        let whiteStop = 0.50 + CGFloat(sin(phase * 0.43)) * 0.035
+
+        return Circle()
+            .fill(
+                LinearGradient(
+                    stops: [
+                        .init(color: Color(hex: 0xFFD600), location: 0),
+                        .init(color: Color(hex: 0xFFFFFF), location: whiteStop),
+                        .init(color: Color(hex: 0x009FFE), location: 1)
+                    ],
+                    startPoint: UnitPoint(x: 0.05 + driftX, y: 0.05 + driftY),
+                    endPoint: UnitPoint(x: 0.95 + driftX, y: 0.95 + driftY)
                 )
-
-            GeometryReader { geometry in
-                let diameter = min(geometry.size.width, geometry.size.height)
-
-                ZStack {
-                    // Saturated color fields drift independently, so the orb feels active
-                    // without rotating as a single rigid object.
-                    RadialGradient(
-                        stops: [
-                            .init(color: Color(hex: 0xFFD600), location: 0),
-                            .init(color: Color(hex: 0xFFD600).opacity(0.98), location: 0.42),
-                            .init(color: Color(hex: 0xFFD600).opacity(0.70), location: 0.72),
-                            .init(color: Color(hex: 0xFFD600).opacity(0), location: 1)
-                        ],
-                        center: UnitPoint(x: 0.18, y: 0.17),
-                        startRadius: 0,
-                        endRadius: diameter * 0.82
-                    )
-                    .offset(
-                        x: CGFloat(sin(phase) * 9),
-                        y: CGFloat(cos(phase * 0.83) * 7)
-                    )
-
-                    RadialGradient(
-                        stops: [
-                            .init(color: Color(hex: 0x009FFE), location: 0),
-                            .init(color: Color(hex: 0x009FFE).opacity(0.98), location: 0.44),
-                            .init(color: Color(hex: 0x009FFE).opacity(0.72), location: 0.76),
-                            .init(color: Color(hex: 0x009FFE).opacity(0), location: 1)
-                        ],
-                        center: UnitPoint(x: 0.84, y: 0.83),
-                        startRadius: 0,
-                        endRadius: diameter * 0.86
-                    )
-                    .offset(
-                        x: CGFloat(cos(phase * 0.74) * 10),
-                        y: CGFloat(sin(phase * 0.91) * 8)
-                    )
-
-                    RadialGradient(
-                        stops: [
-                            .init(color: .white.opacity(0.40), location: 0),
-                            .init(color: .white.opacity(0.14), location: 0.48),
-                            .init(color: .white.opacity(0), location: 1)
-                        ],
-                        center: .center,
-                        startRadius: 0,
-                        endRadius: diameter * 0.34
-                    )
-                }
+            )
+            // Keep the shadow on the orb's inner edge and clip it to the ellipse.
+            .overlay {
+                Circle()
+                    .stroke(Color(hex: 0x595959).opacity(0.25), lineWidth: 8)
+                    .blur(radius: 6.5)
+                    .offset(x: 0, y: -1)
+                    .clipShape(Circle())
+                    .blendMode(.multiply)
+                    .allowsHitTesting(false)
             }
+            .compositingGroup()
+            .frame(width: 203, height: 203)
             .clipShape(Circle())
-
-            // Inset ring is blurred and clipped to the ellipse, so it reads as an
-            // inner shadow only. No exterior drop shadow is applied.
-            Circle()
-                .stroke(Color(hex: 0x595959).opacity(0.25), lineWidth: 8)
-                .blur(radius: 6.5)
-                .offset(x: 0, y: -1)
-                .clipShape(Circle())
-                .blendMode(.multiply)
-                .allowsHitTesting(false)
-        }
-        .compositingGroup()
-        .frame(width: 203, height: 203)
-        .clipShape(Circle())
-        .overlay {
-            Text(String(progress) + "%")
-                .font(.system(size: 42, weight: .bold, design: .default))
-                .foregroundStyle(Color(hex: 0x1B1B1B))
-                .accessibilityHidden(true)
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Analyzing your inbox")
+            .overlay {
+                Text(String(progress) + "%")
+                    .font(.system(size: 42, weight: .bold, design: .default))
+                    .foregroundStyle(Color(hex: 0x1B1B1B))
+                    .accessibilityHidden(true)
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Analyzing your inbox")
     }
 
     private var closeButton: some View {
