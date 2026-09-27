@@ -56,16 +56,7 @@ public struct InboxAnalysisView: View {
                     endPoint: .bottomTrailing
                 )
             )
-            // A blurred inset edge reproduces the specified inner shadow without adding
-            // an outside drop shadow or changing the circle's silhouette.
-            .overlay {
-                Circle()
-                    .stroke(Color(hex: 0x595959).opacity(0.25), lineWidth: 1)
-                    .blur(radius: 6.5)
-                    .offset(x: 0, y: -1)
-                    .clipShape(Circle())
-                    .allowsHitTesting(false)
-            }
+            .shadow(.inner(color: Color(hex: 0x595959).opacity(0.25), radius: 6.5, x: 0, y: -1))
             .overlay {
                 Text("73%")
                     .font(.system(size: 42, weight: .bold, design: .default))
