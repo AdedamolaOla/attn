@@ -96,7 +96,7 @@ private struct StandbyDisplayCanvas: View {
             // run to the rounded bottom edge. A bottom inset here creates the
             // visible horizontal cut line seen in the standby screenshot.
             let contentHeight = finitePositive(proxy.size.height - topInset - bottomInset)
-            let railWidth = finitePositive(contentWidth * 0.39)
+            let railWidth = finitePositive(contentWidth * 0.48)
             let attentionWidth = finitePositive(contentWidth - railWidth - 22)
             // Keep enough vertical breathing room for the clock, date, and
             // the mascot's transparent artwork bounds. This prevents the
