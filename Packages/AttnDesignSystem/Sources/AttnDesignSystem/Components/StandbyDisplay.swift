@@ -162,76 +162,82 @@ private struct StandbyDisplayCanvas: View {
     }
 
     private var attentionColumn: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 18) {
-                HStack(alignment: .center) {
-                    Text("Needs attn. (6)")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.72)
+        ScrollViewReader { scrollProxy in
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 18) {
+                    HStack(alignment: .center) {
+                        Text("Needs attn. (6)")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.72)
 
-                    Spacer(minLength: 12)
+                        Spacer(minLength: 12)
 
-                    Button(action: onDismiss) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.76))
-                            .frame(width: 42, height: 42)
-                            .background(.white.opacity(0.10), in: Circle())
+                        Button(action: onDismiss) {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(.white.opacity(0.76))
+                                .frame(width: 42, height: 42)
+                                .background(.white.opacity(0.10), in: Circle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Close standby display")
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Close standby display")
-                }
 
-                VStack(spacing: 16) {
-                    StandbyPriorityRow(
-                        icon: "$",
-                        iconBackground: Color(red: 217 / 255, green: 236 / 255, blue: 1),
-                        title: "Credit card payment",
-                        timing: "Due Today",
-                        timingColor: Color(red: 255 / 255, green: 69 / 255, blue: 58 / 255)
-                    )
-                    StandbyPriorityRow(
-                        icon: "✈︎",
-                        iconBackground: Color(red: 255 / 255, green: 235 / 255, blue: 213 / 255),
-                        title: "Flight check-in",
-                        timing: "Closes in 30mins",
-                        timingColor: Color(red: 255 / 255, green: 69 / 255, blue: 58 / 255)
-                    )
-                    StandbyPriorityRow(
-                        icon: "📑",
-                        iconBackground: Color(red: 201 / 255, green: 247 / 255, blue: 255 / 255),
-                        title: "Tax filing notice",
-                        timing: "Closes in 1 hour",
-                        timingColor: Color(red: 255 / 255, green: 69 / 255, blue: 58 / 255)
-                    )
-                    StandbyPriorityRow(
-                        icon: "🖌️",
-                        iconBackground: Color(red: 189 / 255, green: 255 / 255, blue: 220 / 255),
-                        title: "Figma edit access req...",
-                        timing: "2days ago",
-                        timingColor: .white.opacity(0.68)
-                    )
-                    StandbyPriorityRow(
-                        icon: "☎️",
-                        iconBackground: Color(red: 189 / 255, green: 255 / 255, blue: 220 / 255),
-                        title: "Product Design Interv...",
-                        timing: "In 8 hours",
-                        timingColor: .white.opacity(0.68)
-                    )
-                    StandbyPriorityRow(
-                        icon: "☎️",
-                        iconBackground: Color(red: 189 / 255, green: 255 / 255, blue: 220 / 255),
-                        title: "Product Design Interview",
-                        timing: "Tomorrow · 9:30 AM",
-                        timingColor: .white.opacity(0.68)
-                    )
+                    VStack(spacing: 16) {
+                        StandbyPriorityRow(
+                            icon: "$",
+                            iconBackground: Color(red: 217 / 255, green: 236 / 255, blue: 1),
+                            title: "Credit card payment",
+                            timing: "Due Today",
+                            timingColor: Color(red: 255 / 255, green: 69 / 255, blue: 58 / 255)
+                        )
+                        StandbyPriorityRow(
+                            icon: "✈︎",
+                            iconBackground: Color(red: 255 / 255, green: 235 / 255, blue: 213 / 255),
+                            title: "Flight check-in",
+                            timing: "Closes in 30mins",
+                            timingColor: Color(red: 255 / 255, green: 69 / 255, blue: 58 / 255)
+                        )
+                        StandbyPriorityRow(
+                            icon: "📑",
+                            iconBackground: Color(red: 201 / 255, green: 247 / 255, blue: 255 / 255),
+                            title: "Tax filing notice",
+                            timing: "Closes in 1 hour",
+                            timingColor: Color(red: 255 / 255, green: 69 / 255, blue: 58 / 255)
+                        )
+                        StandbyPriorityRow(
+                            icon: "🖌️",
+                            iconBackground: Color(red: 189 / 255, green: 255 / 255, blue: 220 / 255),
+                            title: "Figma edit access req...",
+                            timing: "2days ago",
+                            timingColor: .white.opacity(0.68)
+                        )
+                        StandbyPriorityRow(
+                            icon: "☎️",
+                            iconBackground: Color(red: 189 / 255, green: 255 / 255, blue: 220 / 255),
+                            title: "Product Design Interv...",
+                            timing: "In 8 hours",
+                            timingColor: .white.opacity(0.68)
+                        )
+                        StandbyPriorityRow(
+                            icon: "☎️",
+                            iconBackground: Color(red: 189 / 255, green: 255 / 255, blue: 220 / 255),
+                            title: "Product Design Interview",
+                            timing: "Tomorrow · 9:30 AM",
+                            timingColor: .white.opacity(0.68)
+                        )
+                    }
+                    .padding(.bottom, 8)
                 }
-                .padding(.bottom, 8)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
+                .id("standby-attention-top")
             }
-            .padding(.top, 8)
-            .padding(.bottom, 16)
+            .onAppear {
+                scrollProxy.scrollTo("standby-attention-top", anchor: .top)
+            }
         }
         // The heading is intentionally inside the same scroll container as
         // the priority cards so the list moves as one continuous surface.
