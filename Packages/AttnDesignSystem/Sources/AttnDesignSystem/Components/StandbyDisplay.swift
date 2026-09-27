@@ -6,6 +6,10 @@ private func finitePositive(_ value: CGFloat, fallback: CGFloat = 1) -> CGFloat 
     return value
 }
 
+private enum StandbyMetrics {
+    static let outerCornerRadius: CGFloat = 44
+}
+
 /// Full-screen standby surface opened from the Home mascot.
 ///
 /// The layout follows the active scene orientation: portrait uses the
@@ -88,7 +92,7 @@ private struct StandbyDisplayCanvas: View {
         .padding(.vertical, verticalInset)
         .frame(width: size.width, height: size.height, alignment: .center)
         .background(standbyGradient)
-        .clipShape(RoundedRectangle(cornerRadius: 44, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: StandbyMetrics.outerCornerRadius, style: .continuous))
     }
 
     private func portraitLayout(size: CGSize) -> some View {
@@ -107,7 +111,7 @@ private struct StandbyDisplayCanvas: View {
         }
         .frame(width: size.width, height: size.height)
         .background(standbyGradient)
-        .clipShape(RoundedRectangle(cornerRadius: 44, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: StandbyMetrics.outerCornerRadius, style: .continuous))
     }
 
     private func portraitHero(scale: CGFloat, heroHeight: CGFloat) -> some View {
@@ -147,10 +151,10 @@ private struct StandbyDisplayCanvas: View {
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.72))
-                    .frame(width: 40, height: 40)
-                    .contentShape(Rectangle())
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.76))
+                    .frame(width: 42, height: 42)
+                    .background(.white.opacity(0.10), in: Circle())
             }
             .buttonStyle(.plain)
             .padding(.top, 8 * scale)
