@@ -20,7 +20,9 @@ public struct StandbyDisplayView: View {
 
     public var body: some View {
         GeometryReader { proxy in
-            TimelineView(.periodic(from: .now, by: 1)) { context in
+            // Standby is a living surface: the clock and the slow background
+            // motion share one animation timeline.
+            TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { context in
                 StandbyDisplayCanvas(
                     date: context.date,
                     onDismiss: { dismiss() }
@@ -97,22 +99,23 @@ private struct StandbyDisplayCanvas: View {
             let contentHeight = finitePositive(proxy.size.height - (verticalInset * 2))
             let railWidth = finitePositive(contentWidth * 0.39)
             let attentionWidth = finitePositive(contentWidth - railWidth - 22)
+            // Keep enough vertical breathing room for the clock, date, and
+            // the mascot's transparent artwork bounds. This prevents the
+            // mascot from being cropped by the bottom edge on short landscape
+            // windows while preserving the larger treatment on iPad-sized
+            // canvases.
             let mascotWidth = finitePositive(
                 min(
                     360,
                     min(
                         railWidth - 8,
-                        contentHeight * 0.52 * (CGFloat(629) / CGFloat(343))
+                        contentHeight * 0.40 * (CGFloat(629) / CGFloat(343))
                     )
                 )
             )
 
             ZStack {
-                LinearGradient(
-                    colors: [blue, cream],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
+                AnimatedStandbyBackground(date: date, reduceMotion: reduceMotion)
 
                 HStack(spacing: 22) {
                     leftRail(mascotWidth: mascotWidth)
@@ -150,9 +153,8 @@ private struct StandbyDisplayCanvas: View {
             Spacer(minLength: 10)
 
             FloatingStandbyMascot(width: mascotWidth, reduceMotion: reduceMotion)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 4)
-                .padding(.bottom, 2)
+                .frame(width: mascotWidth, alignment: .center)
+                .padding(.bottom, 18)
         }
         .frame(maxHeight: .infinity)
         .accessibilityElement(children: .combine)
@@ -251,6 +253,57 @@ private struct StandbyDisplayCanvas: View {
         formatter.timeZone = .autoupdatingCurrent
         formatter.dateFormat = "EEEE, MMMM d"
         return formatter.string(from: date)
+    }
+}
+
+private struct AnimatedStandbyBackground: View {
+    let date: Date
+    let reduceMotion: Bool
+
+    private let blue = Color(red: 0, green: 159 / 255, blue: 254 / 255)
+    private let cream = Color(red: 249 / 255, green: 251 / 255, blue: 227 / 255)
+
+    var body: some View {
+        let phase = date.timeIntervalSinceReferenceDate * 0.22
+
+        ZStack {
+            LinearGradient(
+                colors: [blue, cream],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            if !reduceMotion {
+                Circle()
+                    .fill(blue.opacity(0.34))
+                    .frame(width: 620, height: 620)
+                    .blur(radius: 84)
+                    .offset(
+                        x: CGFloat(sin(phase) * 170),
+                        y: CGFloat(cos(phase * 0.78) * 70)
+                    )
+
+                Circle()
+                    .fill(Color.white.opacity(0.26))
+                    .frame(width: 520, height: 520)
+                    .blur(radius: 96)
+                    .offset(
+                        x: CGFloat(cos(phase * 0.68) * 190),
+                        y: CGFloat(sin(phase * 0.86) * 120)
+                    )
+
+                LinearGradient(
+                    colors: [.clear, .white.opacity(0.12), .clear],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .rotationEffect(.degrees(Double(sin(phase * 0.42) * 8)))
+                .blendMode(.screen)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .drawingGroup()
+        .accessibilityHidden(true)
     }
 }
 
