@@ -104,7 +104,7 @@ private struct StandbyDisplayCanvas: View {
             let mascotWidth = finitePositive(
                 min(
                     columnWidth - 16,
-                    contentHeight * 0.42
+                    contentHeight * 0.426
                 )
             )
 
