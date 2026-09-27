@@ -8,9 +8,10 @@ private func finitePositive(_ value: CGFloat, fallback: CGFloat = 1) -> CGFloat 
 
 /// Full-screen standby surface opened from the Home mascot.
 ///
-/// The Figma canvas is 1328 × 616 and landscape. Standby requests a
-/// landscape scene orientation so the left-rail / right-priority composition
-/// uses the full display without rotating content inside a portrait canvas.
+/// The layout follows the active scene orientation: portrait uses the
+/// stacked clock / mascot / priority composition, while landscape uses the
+/// existing side-by-side rails. It adapts to the actual viewport so
+/// orientation lock never clips or forces the display.
 public struct StandbyDisplayView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var previewAttendedIDs: Set<String> = []
@@ -31,56 +32,13 @@ public struct StandbyDisplayView: View {
                 attendedIDs: externalAttendedIDs ?? $previewAttendedIDs
             )
         }
-        // Let the window scene perform the orientation change. Do not
-        // rotate the SwiftUI content inside a portrait canvas, because
-        // that clips the landscape composition when rotation is denied.
+        // Use the system's current orientation. A portrait-locked phone
+        // gets the portrait composition; rotating into landscape selects the
+        // original two-column layout.
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea()
         .background(.black)
         .statusBarHidden(true)
-        .onAppear {
-            StandbyOrientation.requestLandscape()
-        }
-        .onDisappear {
-            StandbyOrientation.requestPortrait()
-        }
-    }
-}
-
-private enum StandbyOrientation {
-    static func requestLandscape() {
-        request(.landscape, fallback: .landscapeRight)
-    }
-
-    static func requestPortrait() {
-        request(.portrait, fallback: .portrait)
-    }
-
-    private static func request(
-        _ mask: UIInterfaceOrientationMask,
-        fallback orientation: UIInterfaceOrientation
-    ) {
-        DispatchQueue.main.async {
-            guard let scene = UIApplication.shared.connectedScenes
-                .compactMap({ $0 as? UIWindowScene })
-                .first else { return }
-
-            if #available(iOS 16.0, *) {
-                scene.requestGeometryUpdate(
-                    UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: mask),
-                    errorHandler: { _ in
-                        forceDeviceOrientation(orientation)
-                    }
-                )
-            } else {
-                forceDeviceOrientation(orientation)
-            }
-        }
-    }
-
-    private static func forceDeviceOrientation(_ orientation: UIInterfaceOrientation) {
-        UIDevice.current.setValue(orientation.rawValue, forKey: "orientation")
-        UIViewController.attemptRotationToDeviceOrientation()
     }
 }
 
@@ -93,50 +51,124 @@ private struct StandbyDisplayCanvas: View {
 
     var body: some View {
         GeometryReader { proxy in
-            // All dimensions are measured from the actual landscape viewport.
-            // Decorative layers never participate in the HStack's layout size.
-            let horizontalInset: CGFloat = 16
-            let verticalInset: CGFloat = 8
-            let columnGap: CGFloat = 12
-            let contentWidth = finitePositive(proxy.size.width - 2 * horizontalInset)
-            let contentHeight = finitePositive(proxy.size.height - 2 * verticalInset)
-            let columnWidth = finitePositive((contentWidth - columnGap) / 2)
-            let mascotWidth = finitePositive(
-                min(
-                    columnWidth - 16,
-                    contentHeight * 0.426
-                )
-            )
+            let size = proxy.size
 
-            HStack(alignment: .top, spacing: columnGap) {
-                leftRail(mascotWidth: mascotWidth)
-                    .frame(width: columnWidth, height: contentHeight)
-
-                attentionColumn
-                    .frame(width: columnWidth, height: contentHeight, alignment: .top)
+            Group {
+                if size.height >= size.width {
+                    portraitLayout(size: size)
+                } else {
+                    landscapeLayout(size: size)
+                }
             }
-            .frame(width: contentWidth, height: contentHeight)
-            .padding(.horizontal, horizontalInset)
-            .padding(.vertical, verticalInset)
-            .frame(
-                width: proxy.size.width,
-                height: proxy.size.height,
-                alignment: .center
-            )
-            .background {
-                LinearGradient(
-                    colors: [
-                        Color(red: 0, green: 159 / 255, blue: 254 / 255),
-                        Color(red: 249 / 255, green: 251 / 255, blue: 227 / 255)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 44, style: .continuous))
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Standby display")
         }
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("Standby display")
+    }
+
+    private func landscapeLayout(size: CGSize) -> some View {
+        let horizontalInset: CGFloat = 16
+        let verticalInset: CGFloat = 8
+        let columnGap: CGFloat = 12
+        let contentWidth = finitePositive(size.width - 2 * horizontalInset)
+        let contentHeight = finitePositive(size.height - 2 * verticalInset)
+        let columnWidth = finitePositive((contentWidth - columnGap) / 2)
+        let mascotWidth = finitePositive(
+            min(columnWidth - 16, contentHeight * 0.426)
+        )
+
+        return HStack(alignment: .top, spacing: columnGap) {
+            leftRail(mascotWidth: mascotWidth)
+                .frame(width: columnWidth, height: contentHeight)
+
+            attentionColumn(isPortrait: false)
+                .frame(width: columnWidth, height: contentHeight, alignment: .top)
+        }
+        .frame(width: contentWidth, height: contentHeight)
+        .padding(.horizontal, horizontalInset)
+        .padding(.vertical, verticalInset)
+        .frame(width: size.width, height: size.height, alignment: .center)
+        .background(standbyGradient)
+        .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
+    }
+
+    private func portraitLayout(size: CGSize) -> some View {
+        // Figma's 790 × 1599 canvas maps to about 395 × 800 points.
+        // Cap the hero at its design height; smaller phones scale it down.
+        let scale = min(size.width / 395, min(size.height / 800, 1))
+        let heroHeight = min(365 * scale, size.height * 0.47)
+
+        return VStack(spacing: 0) {
+            portraitHero(scale: scale, heroHeight: heroHeight)
+                .frame(height: heroHeight)
+
+            attentionColumn(isPortrait: true)
+                .padding(.horizontal, 12 * scale)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(width: size.width, height: size.height)
+        .background(standbyGradient)
+        .clipShape(RoundedRectangle(cornerRadius: 36 * scale, style: .continuous))
+    }
+
+    private func portraitHero(scale: CGFloat, heroHeight: CGFloat) -> some View {
+        let mascotWidth = min(127.7 * scale, heroHeight * 0.5 / 1.426)
+
+        return ZStack(alignment: .topTrailing) {
+            VStack(spacing: 0) {
+                VStack(spacing: 12 * scale) {
+                    Text(timeLabel)
+                        .font(.custom(AttnAgbalumoFont.name, size: 64 * scale))
+                        .tracking(-2 * scale)
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.65)
+                        .frame(height: 66 * scale)
+
+                    Text(dateLabel)
+                        .font(.system(size: 13 * scale, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.84))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                        .frame(height: 18 * scale)
+                }
+
+                Spacer(minLength: 30 * scale)
+
+                FloatingStandbyMascot(width: mascotWidth, reduceMotion: reduceMotion)
+                    .frame(
+                        width: mascotWidth,
+                        height: mascotWidth * 2048 / 1435
+                    )
+                    .accessibilityHidden(true)
+            }
+            .padding(.horizontal, 16 * scale)
+            .padding(.top, 48 * scale)
+            .padding(.bottom, 4 * scale)
+
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.72))
+                    .frame(width: 40, height: 40)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 8 * scale)
+            .padding(.trailing, 12 * scale)
+            .accessibilityLabel("Close standby display")
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    private var standbyGradient: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color(red: 0, green: 159.0 / 255.0, blue: 254.0 / 255.0),
+                Color(red: 249.0 / 255.0, green: 251.0 / 255.0, blue: 227.0 / 255.0)
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
     }
 
     private func leftRail(mascotWidth: CGFloat) -> some View {
@@ -169,30 +201,32 @@ private struct StandbyDisplayCanvas: View {
         .accessibilityLabel("\(timeLabel), \(dateLabel), attn mascot")
     }
 
-    private var attentionColumn: some View {
+    private func attentionColumn(isPortrait: Bool) -> some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .center) {
                     Text("Needs attn. (\(pendingPriorities.count))")
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(.system(size: isPortrait ? 18 : 20, weight: .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                         .minimumScaleFactor(0.72)
 
                     Spacer(minLength: 12)
 
-                    Button(action: onDismiss) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.76))
-                            .frame(width: 42, height: 42)
-                            .background(.white.opacity(0.10), in: Circle())
+                    if !isPortrait {
+                        Button(action: onDismiss) {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(.white.opacity(0.76))
+                                .frame(width: 42, height: 42)
+                                .background(.white.opacity(0.10), in: Circle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Close standby display")
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Close standby display")
                 }
-                .padding(.top, 8)
-                .padding(.bottom, 18)
+                .padding(.top, isPortrait ? 0 : 8)
+                .padding(.bottom, isPortrait ? 12 : 18)
 
                 if pendingPriorities.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
@@ -206,10 +240,10 @@ private struct StandbyDisplayCanvas: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
                     ForEach(pendingPriorities) { priority in
-                        StandbySwipeToAttendRow(priority: priority) {
+                        StandbySwipeToAttendRow(priority: priority, isPortrait: isPortrait) {
                             markAttended(priority.id)
                         }
-                        .padding(.bottom, 16)
+                        .padding(.bottom, isPortrait ? 12 : 16)
                     }
                 }
             }
@@ -323,6 +357,7 @@ private struct StandbyPriority: Identifiable {
 /// Horizontal swipes complete a priority directly; vertical drags still scroll.
 private struct StandbySwipeToAttendRow: View {
     let priority: StandbyPriority
+    let isPortrait: Bool
     let onComplete: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -337,7 +372,8 @@ private struct StandbySwipeToAttendRow: View {
             iconBackground: priority.iconBackground,
             title: priority.title,
             timing: priority.timing,
-            timingColor: priority.timingColor
+            timingColor: priority.timingColor,
+            isPortrait: isPortrait
         )
         .offset(x: offset)
         .opacity(isCompleting ? 0 : 1 - min(abs(offset) / max(width, 1) * 0.28, 0.28))
@@ -404,40 +440,65 @@ private struct StandbyPriorityRow: View {
     let title: String
     let timing: String
     let timingColor: Color
+    let isPortrait: Bool
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: isPortrait ? 15 : 14) {
             Text(icon)
-                .font(.system(size: 28, weight: .semibold, design: .rounded))
+                .font(.system(
+                    size: isPortrait ? 34 : 28,
+                    weight: .semibold,
+                    design: .rounded
+                ))
                 .foregroundStyle(Color(red: 16 / 255, green: 16 / 255, blue: 18 / 255))
-                .frame(width: 64, height: 64)
-                .background(iconBackground, in: RoundedRectangle(cornerRadius: 15, style: .continuous))
+                .frame(width: isPortrait ? 68 : 64, height: isPortrait ? 68 : 64)
+                .background(
+                    iconBackground,
+                    in: RoundedRectangle(
+                        cornerRadius: isPortrait ? 8.5 : 15,
+                        style: .continuous
+                    )
+                )
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(title)
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: isPortrait ? 18 : 17, weight: .semibold))
                     .foregroundStyle(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.78)
 
                 Text(timing)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: isPortrait ? 15 : 14, weight: .semibold))
                     .foregroundStyle(timingColor)
                     .lineLimit(1)
             }
 
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .padding(.leading, isPortrait ? 8.5 : 14)
+        .padding(.trailing, isPortrait ? 17 : 14)
+        .padding(.vertical, isPortrait ? 8.5 : 12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(red: 22 / 255, green: 22 / 255, blue: 24 / 255), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .shadow(color: .black.opacity(0.22), radius: 7, y: 6)
+        .background(
+            Color(red: 22 / 255, green: 22 / 255, blue: 24 / 255),
+            in: RoundedRectangle(cornerRadius: isPortrait ? 25.4 : 24, style: .continuous)
+        )
+        .shadow(
+            color: .black.opacity(isPortrait ? 0.08 : 0.22),
+            radius: isPortrait ? 4.1 : 7,
+            y: isPortrait ? 4.2 : 6
+        )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title), \(timing)")
     }
 }
 
-#Preview("Standby") {
+#Preview("Standby — Portrait") {
     StandbyDisplayView()
+        .frame(width: 395, height: 800)
+}
+
+#Preview("Standby — Landscape") {
+    StandbyDisplayView()
+        .frame(width: 852, height: 393)
 }
