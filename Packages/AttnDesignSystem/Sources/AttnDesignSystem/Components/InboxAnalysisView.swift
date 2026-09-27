@@ -56,7 +56,16 @@ public struct InboxAnalysisView: View {
                     endPoint: .bottomTrailing
                 )
             )
-            .shadow(.inner(color: Color(hex: 0x595959).opacity(0.25), radius: 6.5, x: 0, y: -1))
+            // Paint the blurred shadow ring inside the ellipse's mask. Clipping it here
+            // prevents any exterior/drop shadow from escaping the orb.
+            .overlay {
+                Circle()
+                    .stroke(Color(hex: 0x595959).opacity(0.25), lineWidth: 1)
+                    .blur(radius: 6.5)
+                    .offset(x: 0, y: -1)
+                    .clipShape(Circle())
+                    .allowsHitTesting(false)
+            }
             .overlay {
                 Text("73%")
                     .font(.system(size: 42, weight: .bold, design: .default))
