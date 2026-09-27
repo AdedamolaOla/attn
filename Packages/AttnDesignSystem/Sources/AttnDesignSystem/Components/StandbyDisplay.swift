@@ -13,8 +13,11 @@ private func finitePositive(_ value: CGFloat, fallback: CGFloat = 1) -> CGFloat 
 /// uses the full display without rotating content inside a portrait canvas.
 public struct StandbyDisplayView: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var previewAttendedIDs: Set<String> = []
+    private let externalAttendedIDs: Binding<Set<String>>?
 
-    public init() {
+    public init(attendedIDs: Binding<Set<String>>? = nil) {
+        self.externalAttendedIDs = attendedIDs
         AttnAgbalumoFont.register()
     }
 
@@ -24,7 +27,8 @@ public struct StandbyDisplayView: View {
         TimelineView(.periodic(from: .now, by: 60)) { context in
             StandbyDisplayCanvas(
                 date: context.date,
-                onDismiss: { dismiss() }
+                onDismiss: { dismiss() },
+                attendedIDs: externalAttendedIDs ?? $previewAttendedIDs
             )
         }
         // Let the window scene perform the orientation change. Do not
@@ -83,9 +87,11 @@ private enum StandbyOrientation {
 private struct StandbyDisplayCanvas: View {
     let date: Date
     let onDismiss: () -> Void
+    @Binding var attendedIDs: Set<String>
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var hasScrolledPastTop = false
+    @State private var lastAttendedID: String?
 
     var body: some View {
         GeometryReader { proxy in
@@ -170,78 +176,77 @@ private struct StandbyDisplayCanvas: View {
 
     private var attentionColumn: some View {
         ScrollViewReader { scrollProxy in
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 18) {
-                    HStack(alignment: .center) {
-                        Text("Needs attn. (6)")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.72)
+            // A plain List gives each custom card Apple's familiar leading-edge
+            // full-swipe interaction without changing the card's visual surface.
+            List {
+                HStack(alignment: .center) {
+                    Text("Needs attn. (\(pendingPriorities.count))")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
 
-                        Spacer(minLength: 12)
+                    Spacer(minLength: 12)
 
-                        Button(action: onDismiss) {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundStyle(.white.opacity(0.76))
-                                .frame(width: 42, height: 42)
-                                .background(.white.opacity(0.10), in: Circle())
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Close standby display")
+                    Button(action: onDismiss) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.76))
+                            .frame(width: 42, height: 42)
+                            .background(.white.opacity(0.10), in: Circle())
                     }
-
-                    VStack(spacing: 16) {
-                        StandbyPriorityRow(
-                            icon: "$",
-                            iconBackground: Color(red: 217 / 255, green: 236 / 255, blue: 1),
-                            title: "Credit card payment",
-                            timing: "Due Today",
-                            timingColor: Color(red: 255 / 255, green: 69 / 255, blue: 58 / 255)
-                        )
-                        StandbyPriorityRow(
-                            icon: "✈︎",
-                            iconBackground: Color(red: 255 / 255, green: 235 / 255, blue: 213 / 255),
-                            title: "Flight check-in",
-                            timing: "Closes in 30mins",
-                            timingColor: Color(red: 255 / 255, green: 69 / 255, blue: 58 / 255)
-                        )
-                        StandbyPriorityRow(
-                            icon: "📑",
-                            iconBackground: Color(red: 201 / 255, green: 247 / 255, blue: 255 / 255),
-                            title: "Tax filing notice",
-                            timing: "Closes in 1 hour",
-                            timingColor: Color(red: 255 / 255, green: 69 / 255, blue: 58 / 255)
-                        )
-                        StandbyPriorityRow(
-                            icon: "🖌️",
-                            iconBackground: Color(red: 189 / 255, green: 255 / 255, blue: 220 / 255),
-                            title: "Figma edit access req...",
-                            timing: "2days ago",
-                            timingColor: .white.opacity(0.68)
-                        )
-                        StandbyPriorityRow(
-                            icon: "☎️",
-                            iconBackground: Color(red: 189 / 255, green: 255 / 255, blue: 220 / 255),
-                            title: "Product Design Interv...",
-                            timing: "In 8 hours",
-                            timingColor: .white.opacity(0.68)
-                        )
-                        StandbyPriorityRow(
-                            icon: "☎️",
-                            iconBackground: Color(red: 189 / 255, green: 255 / 255, blue: 220 / 255),
-                            title: "Product Design Interview",
-                            timing: "Tomorrow · 9:30 AM",
-                            timingColor: .white.opacity(0.68)
-                        )
-                    }
-                    .padding(.bottom, 8)
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Close standby display")
                 }
-                .padding(.top, 8)
-                .padding(.bottom, 16)
                 .id("standby-attention-top")
+                .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 18, trailing: 0))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+
+                if pendingPriorities.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("All clear for now.")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                        Text("We'll let you know if that changes.")
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.8))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                } else {
+                    ForEach(pendingPriorities) { priority in
+                        StandbyPriorityRow(
+                            icon: priority.icon,
+                            iconBackground: priority.iconBackground,
+                            title: priority.title,
+                            timing: priority.timing,
+                            timingColor: priority.timingColor
+                        )
+                        .padding(.bottom, 16)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                            Button {
+                                markAttended(priority.id)
+                            } label: {
+                                Label("Attended", systemImage: "checkmark")
+                            }
+                            .tint(AttnColors.resolved)
+                        }
+                        .accessibilityAction(named: Text("Mark attended")) {
+                            markAttended(priority.id)
+                        }
+                    }
+                }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .scrollIndicators(.hidden)
+            .environment(\.defaultMinListRowHeight, 0)
             .onAppear {
                 scrollProxy.scrollTo("standby-attention-top", anchor: .top)
             }
@@ -252,8 +257,6 @@ private struct StandbyDisplayCanvas: View {
             }
             .mask {
                 if hasScrolledPastTop {
-                    // A departing card dissolves at the scroll boundary
-                    // instead of leaving a clipped sliver above the next one.
                     LinearGradient(
                         stops: [
                             .init(color: .clear, location: 0),
@@ -267,11 +270,99 @@ private struct StandbyDisplayCanvas: View {
                     Rectangle()
                 }
             }
+            .overlay(alignment: .bottom) {
+                if let lastAttendedID,
+                   let priority = priorities.first(where: { $0.id == lastAttendedID }) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(AttnColors.resolved)
+                            .accessibilityHidden(true)
+                        Text("\(priority.title) attended")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                        Spacer(minLength: 8)
+                        Button("Undo", action: undoLastAttended)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(AttnColors.surfaceConfidence)
+                            .frame(minHeight: 44)
+                    }
+                    .padding(.horizontal, 16)
+                    .background(AttnColors.surfaceWidget, in: .capsule)
+                    .padding(.horizontal, 8)
+                    .padding(.bottom, 8)
+                    .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
+                    .accessibilityElement(children: .contain)
+                    .accessibilityHint("This marks your attention only; it does not confirm an action outside ATTN.")
+                }
+            }
         }
-        // The heading is intentionally inside the same scroll container as
-        // the priority cards so the list moves as one continuous surface.
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Six things need attention")
+        .accessibilityLabel("\(pendingPriorities.count) things need attention")
+    }
+
+    private var pendingPriorities: [StandbyPriority] {
+        priorities.filter { !attendedIDs.contains($0.id) }
+    }
+
+    private var priorities: [StandbyPriority] {
+        [
+            StandbyPriority(
+                id: "payment", icon: "$",
+                iconBackground: Color(red: 217 / 255, green: 236 / 255, blue: 1),
+                title: "Credit card payment", timing: "Due Today",
+                timingColor: Color(red: 255 / 255, green: 69 / 255, blue: 58 / 255)
+            ),
+            StandbyPriority(
+                id: "flight", icon: "✈︎",
+                iconBackground: Color(red: 1, green: 235 / 255, blue: 213 / 255),
+                title: "Flight check-in", timing: "Closes in 30mins",
+                timingColor: Color(red: 255 / 255, green: 69 / 255, blue: 58 / 255)
+            ),
+            StandbyPriority(
+                id: "tax", icon: "📑",
+                iconBackground: Color(red: 201 / 255, green: 247 / 255, blue: 1),
+                title: "Tax filing notice", timing: "Closes in 1 hour",
+                timingColor: Color(red: 255 / 255, green: 69 / 255, blue: 58 / 255)
+            ),
+            StandbyPriority(
+                id: "figma", icon: "🖌️",
+                iconBackground: Color(red: 189 / 255, green: 1, blue: 220 / 255),
+                title: "Figma edit access req...", timing: "2days ago",
+                timingColor: .white.opacity(0.68)
+            ),
+            StandbyPriority(
+                id: "interview-soon", icon: "☎️",
+                iconBackground: Color(red: 189 / 255, green: 1, blue: 220 / 255),
+                title: "Product Design Interv...", timing: "In 8 hours",
+                timingColor: .white.opacity(0.68)
+            ),
+            StandbyPriority(
+                id: "interview-tomorrow", icon: "☎️",
+                iconBackground: Color(red: 189 / 255, green: 1, blue: 220 / 255),
+                title: "Product Design Interview", timing: "Tomorrow · 9:30 AM",
+                timingColor: .white.opacity(0.68)
+            )
+        ]
+    }
+
+    private func markAttended(_ id: String) {
+        guard !attendedIDs.contains(id) else { return }
+        withAnimation(reduceMotion ? nil : AttnMotion.contentAnimation) {
+            attendedIDs.insert(id)
+            lastAttendedID = id
+        }
+        AttnHaptics.success()
+    }
+
+    private func undoLastAttended() {
+        guard let id = lastAttendedID else { return }
+        withAnimation(reduceMotion ? nil : AttnMotion.contentAnimation) {
+            attendedIDs.remove(id)
+            lastAttendedID = nil
+        }
+        AttnHaptics.selection()
     }
 
     private var timeLabel: String {
@@ -308,6 +399,15 @@ private struct FloatingStandbyMascot: View {
         }
         .accessibilityHidden(true)
     }
+}
+
+private struct StandbyPriority: Identifiable {
+    let id: String
+    let icon: String
+    let iconBackground: Color
+    let title: String
+    let timing: String
+    let timingColor: Color
 }
 
 private struct StandbyPriorityRow: View {
