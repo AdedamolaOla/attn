@@ -51,6 +51,7 @@ public struct AttnMascotQuestion: View {
                 .accessibilityHidden(true)
 
             PixelQuestionBubble()
+                .fill(Color(red: 0.90, green: 0.89, blue: 0.87))
                 .overlay {
                     Text("?")
                         .font(.system(size: width * 0.22, weight: .black, design: .rounded))
