@@ -88,7 +88,7 @@ private struct StandbyDisplayCanvas: View {
         .padding(.vertical, verticalInset)
         .frame(width: size.width, height: size.height, alignment: .center)
         .background(standbyGradient)
-        .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 44, style: .continuous))
     }
 
     private func portraitLayout(size: CGSize) -> some View {
@@ -107,7 +107,7 @@ private struct StandbyDisplayCanvas: View {
         }
         .frame(width: size.width, height: size.height)
         .background(standbyGradient)
-        .clipShape(RoundedRectangle(cornerRadius: 36 * scale, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 44, style: .continuous))
     }
 
     private func portraitHero(scale: CGFloat, heroHeight: CGFloat) -> some View {
