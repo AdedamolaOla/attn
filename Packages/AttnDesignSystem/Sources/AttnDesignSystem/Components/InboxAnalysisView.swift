@@ -87,8 +87,8 @@ public struct InboxAnalysisView: View {
                         endRadius: diameter * 0.82
                     )
                     .offset(
-                        x: sin(phase) * 9,
-                        y: cos(phase * 0.83) * 7
+                        x: CGFloat(sin(phase) * 9),
+                        y: CGFloat(cos(phase * 0.83) * 7)
                     )
 
                     RadialGradient(
@@ -103,8 +103,8 @@ public struct InboxAnalysisView: View {
                         endRadius: diameter * 0.86
                     )
                     .offset(
-                        x: cos(phase * 0.74) * 10,
-                        y: sin(phase * 0.91) * 8
+                        x: CGFloat(cos(phase * 0.74) * 10),
+                        y: CGFloat(sin(phase * 0.91) * 8)
                     )
 
                     RadialGradient(
