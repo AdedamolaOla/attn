@@ -118,10 +118,10 @@ private struct StandbyDisplayCanvas: View {
 
                 HStack(alignment: .top, spacing: 22) {
                     leftRail(mascotWidth: mascotWidth)
-                        .frame(width: railWidth)
+                        .frame(width: railWidth, height: contentHeight, alignment: .top)
 
                     attentionColumn
-                        .frame(width: attentionWidth)
+                        .frame(width: attentionWidth, height: contentHeight, alignment: .top)
                 }
                 .frame(width: contentWidth, height: contentHeight, alignment: .topLeading)
                 .padding(.horizontal, horizontalInset)
