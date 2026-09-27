@@ -90,7 +90,6 @@ private struct StandbyDisplayCanvas: View {
     @Binding var attendedIDs: Set<String>
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var hasScrolledPastTop = false
     @State private var lastAttendedID: String?
 
     var body: some View {
@@ -175,10 +174,8 @@ private struct StandbyDisplayCanvas: View {
     }
 
     private var attentionColumn: some View {
-        ScrollViewReader { scrollProxy in
-            // A plain List gives each custom card Apple's familiar leading-edge
-            // full-swipe interaction without changing the card's visual surface.
-            List {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .center) {
                     Text("Needs attn. (\(pendingPriorities.count))")
                         .font(.system(size: 20, weight: .semibold))
@@ -198,10 +195,8 @@ private struct StandbyDisplayCanvas: View {
                     .buttonStyle(.plain)
                     .accessibilityLabel("Close standby display")
                 }
-                .id("standby-attention-top")
-                .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 18, trailing: 0))
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
+                .padding(.top, 8)
+                .padding(.bottom, 18)
 
                 if pendingPriorities.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
@@ -213,96 +208,50 @@ private struct StandbyDisplayCanvas: View {
                             .foregroundStyle(.white.opacity(0.8))
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
                 } else {
                     ForEach(pendingPriorities) { priority in
-                        StandbyPriorityRow(
-                            icon: priority.icon,
-                            iconBackground: priority.iconBackground,
-                            title: priority.title,
-                            timing: priority.timing,
-                            timingColor: priority.timingColor
-                        )
-                        .padding(.bottom, 16)
-                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                            Button {
-                                markAttended(priority.id)
-                            } label: {
-                                Label("Attended", systemImage: "checkmark")
-                            }
-                            .tint(AttnColors.resolved)
-                        }
-                        .accessibilityAction(named: Text("Mark attended")) {
+                        StandbySwipeToAttendRow(priority: priority) {
                             markAttended(priority.id)
                         }
+                        .padding(.bottom, 16)
                     }
                 }
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .scrollIndicators(.hidden)
-            .environment(\.defaultMinListRowHeight, 0)
-            .onAppear {
-                scrollProxy.scrollTo("standby-attention-top", anchor: .top)
-            }
-            .onScrollGeometryChange(for: Bool.self) { geometry in
-                geometry.contentOffset.y > 2
-            } action: { _, isScrolled in
-                hasScrolledPastTop = isScrolled
-            }
-            .mask {
-                if hasScrolledPastTop {
-                    LinearGradient(
-                        stops: [
-                            .init(color: .clear, location: 0),
-                            .init(color: .black, location: 0.07),
-                            .init(color: .black, location: 1)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                } else {
-                    Rectangle()
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .scrollIndicators(.hidden)
+        // The card must be allowed to travel past either side of its column.
+        // Only the outer rounded display clips at the physical screen edge.
+        .scrollClipDisabled()
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if let lastAttendedID,
+               let priority = priorities.first(where: { $0.id == lastAttendedID }) {
+                HStack(spacing: 12) {
+                    Text("\(priority.title) attended")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    Spacer(minLength: 8)
+                    Button("Undo", action: undoLastAttended)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(AttnColors.surfaceConfidence)
+                        .frame(minHeight: 44)
                 }
-            }
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                if let lastAttendedID,
-                   let priority = priorities.first(where: { $0.id == lastAttendedID }) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(AttnColors.resolved)
-                            .accessibilityHidden(true)
-                        Text("\(priority.title) attended")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
-                        Spacer(minLength: 8)
-                        Button("Undo", action: undoLastAttended)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(AttnColors.surfaceConfidence)
-                            .frame(minHeight: 44)
-                    }
-                    .padding(.horizontal, 16)
-                    .background(AttnColors.surfaceWidget, in: .capsule)
-                    .padding(.horizontal, 8)
-                    .padding(.bottom, 8)
-                    .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
-                    .accessibilityElement(children: .contain)
-                    .accessibilityHint("This marks your attention only; it does not confirm an action outside ATTN.")
-                }
+                .padding(.horizontal, 16)
+                .background(AttnColors.surfaceWidget, in: .capsule)
+                .padding(.horizontal, 8)
+                .padding(.bottom, 8)
+                .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
+                .accessibilityElement(children: .contain)
+                .accessibilityHint("This marks your attention only; it does not confirm an action outside ATTN.")
             }
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("\(pendingPriorities.count) things need attention")
     }
 
-    private var pendingPriorities: [StandbyPriority] {
+        private var pendingPriorities: [StandbyPriority] {
         priorities.filter { !attendedIDs.contains($0.id) }
     }
 
@@ -349,7 +298,7 @@ private struct StandbyDisplayCanvas: View {
 
     private func markAttended(_ id: String) {
         guard !attendedIDs.contains(id) else { return }
-        withAnimation(reduceMotion ? nil : AttnMotion.contentAnimation) {
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.28)) {
             attendedIDs.insert(id)
             lastAttendedID = id
         }
@@ -408,6 +357,82 @@ private struct StandbyPriority: Identifiable {
     let title: String
     let timing: String
     let timingColor: Color
+}
+
+/// Horizontal swipes complete a priority directly; vertical drags still scroll.
+private struct StandbySwipeToAttendRow: View {
+    let priority: StandbyPriority
+    let onComplete: () -> Void
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var offset: CGFloat = 0
+    @State private var width: CGFloat = 320
+    @State private var isHorizontalDrag = false
+    @State private var isCompleting = false
+
+    var body: some View {
+        StandbyPriorityRow(
+            icon: priority.icon,
+            iconBackground: priority.iconBackground,
+            title: priority.title,
+            timing: priority.timing,
+            timingColor: priority.timingColor
+        )
+        .offset(x: offset)
+        .opacity(isCompleting ? 0 : 1 - min(abs(offset) / max(width, 1) * 0.28, 0.28))
+        .blur(radius: reduceMotion ? 0 : (isCompleting ? 6 : 0))
+        .contentShape(Rectangle())
+        .onGeometryChange(for: CGFloat.self) { geometry in
+            geometry.size.width
+        } action: { newWidth in
+            width = max(newWidth, 1)
+        }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 12)
+                .onChanged { value in
+                    guard !isCompleting else { return }
+                    if !isHorizontalDrag {
+                        guard abs(value.translation.width) > abs(value.translation.height) * 1.25 else { return }
+                        isHorizontalDrag = true
+                    }
+                    offset = value.translation.width
+                }
+                .onEnded { value in
+                    defer { isHorizontalDrag = false }
+                    guard isHorizontalDrag, !isCompleting else { return }
+
+                    let distance = abs(value.translation.width)
+                    let predictedDistance = abs(value.predictedEndTranslation.width)
+                    let deliberate = distance >= max(72, width * 0.28)
+                        || (distance >= 48 && predictedDistance >= width * 0.55)
+
+                    guard deliberate else {
+                        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.22)) {
+                            offset = 0
+                        }
+                        return
+                    }
+
+                    let direction: CGFloat = value.translation.width >= 0 ? 1 : -1
+                    if reduceMotion {
+                        isCompleting = true
+                        onComplete()
+                    } else {
+                        withAnimation(.easeInOut(duration: 0.26), completionCriteria: .removed) {
+                            isCompleting = true
+                            offset = direction * (width + 48)
+                        } completion: {
+                            onComplete()
+                        }
+                    }
+                }
+        )
+        .accessibilityAction(named: Text("Mark attended")) {
+            guard !isCompleting else { return }
+            onComplete()
+        }
+        .accessibilityHint("Swipe left or right to mark attended")
+    }
 }
 
 private struct StandbyPriorityRow: View {
