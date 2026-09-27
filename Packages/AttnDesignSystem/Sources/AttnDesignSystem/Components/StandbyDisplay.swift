@@ -90,7 +90,6 @@ private struct StandbyDisplayCanvas: View {
     @Binding var attendedIDs: Set<String>
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var lastAttendedID: String?
 
     var body: some View {
         GeometryReader { proxy in
@@ -223,35 +222,11 @@ private struct StandbyDisplayCanvas: View {
         // The card must be allowed to travel past either side of its column.
         // Only the outer rounded display clips at the physical screen edge.
         .scrollClipDisabled()
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            if let lastAttendedID,
-               let priority = priorities.first(where: { $0.id == lastAttendedID }) {
-                HStack(spacing: 12) {
-                    Text("\(priority.title) attended")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                    Spacer(minLength: 8)
-                    Button("Undo", action: undoLastAttended)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(AttnColors.surfaceConfidence)
-                        .frame(minHeight: 44)
-                }
-                .padding(.horizontal, 16)
-                .background(AttnColors.surfaceWidget, in: .capsule)
-                .padding(.horizontal, 8)
-                .padding(.bottom, 8)
-                .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
-                .accessibilityElement(children: .contain)
-                .accessibilityHint("This marks your attention only; it does not confirm an action outside ATTN.")
-            }
-        }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("\(pendingPriorities.count) things need attention")
     }
 
-        private var pendingPriorities: [StandbyPriority] {
+    private var pendingPriorities: [StandbyPriority] {
         priorities.filter { !attendedIDs.contains($0.id) }
     }
 
@@ -300,18 +275,7 @@ private struct StandbyDisplayCanvas: View {
         guard !attendedIDs.contains(id) else { return }
         withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.28)) {
             attendedIDs.insert(id)
-            lastAttendedID = id
         }
-        AttnHaptics.success()
-    }
-
-    private func undoLastAttended() {
-        guard let id = lastAttendedID else { return }
-        withAnimation(reduceMotion ? nil : AttnMotion.contentAnimation) {
-            attendedIDs.remove(id)
-            lastAttendedID = nil
-        }
-        AttnHaptics.selection()
     }
 
     private var timeLabel: String {
@@ -414,6 +378,7 @@ private struct StandbySwipeToAttendRow: View {
                     }
 
                     let direction: CGFloat = value.translation.width >= 0 ? 1 : -1
+                    AttnHaptics.success()
                     if reduceMotion {
                         isCompleting = true
                         onComplete()
@@ -429,6 +394,7 @@ private struct StandbySwipeToAttendRow: View {
         )
         .accessibilityAction(named: Text("Mark attended")) {
             guard !isCompleting else { return }
+            AttnHaptics.success()
             onComplete()
         }
         .accessibilityHint("Swipe left or right to mark attended")
