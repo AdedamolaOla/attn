@@ -206,10 +206,13 @@ private struct StandbyDisplayCanvas: View {
     }
 
     private func attentionColumn(isPortrait: Bool) -> some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 0) {
+        // Keep the scroll viewport bounded by the space assigned by the
+        // portrait/landscape parent. The content remains taller than that
+        // viewport when priorities overflow, so vertical pans always scroll.
+        ScrollView(.vertical) {
+            VStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .center) {
-                    Text("Needs attn. (\(pendingPriorities.count))")
+                    Text("Needs attn. (\\(pendingPriorities.count))")
                         .font(.system(size: isPortrait ? 18 : 20, weight: .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
@@ -243,22 +246,31 @@ private struct StandbyDisplayCanvas: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
-                    ForEach(pendingPriorities) { priority in
-                        StandbySwipeToAttendRow(priority: priority, isPortrait: isPortrait) {
-                            markAttended(priority.id)
+                    // The list is small and finite; an eager stack reports
+                    // the complete content height to ScrollView immediately.
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(pendingPriorities) { priority in
+                            StandbySwipeToAttendRow(priority: priority, isPortrait: isPortrait) {
+                                markAttended(priority.id)
+                            }
+                            .padding(.bottom, isPortrait ? 12 : 16)
                         }
-                        .padding(.bottom, isPortrait ? 12 : 16)
                     }
+                    .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.bottom, 24)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .scrollDisabled(false)
+        .scrollBounceBehavior(.always, axes: .vertical)
         .scrollIndicators(.hidden)
-        // The card must be allowed to travel past either side of its column.
-        // Only the outer rounded display clips at the physical screen edge.
+        // Keep the card's completion animation from being cropped by the
+        // inner viewport. The outer standby panel still clips to its corners.
         .scrollClipDisabled()
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("\(pendingPriorities.count) things need attention")
+        .accessibilityLabel("\\(pendingPriorities.count) things need attention")
     }
 
     private var pendingPriorities: [StandbyPriority] {
