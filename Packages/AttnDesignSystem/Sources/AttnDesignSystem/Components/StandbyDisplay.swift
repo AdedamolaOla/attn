@@ -379,7 +379,6 @@ private struct StandbySwipeToAttendRow: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var offset: CGFloat = 0
     @State private var width: CGFloat = 320
-    @State private var isHorizontalDrag = false
     @State private var isCompleting = false
 
     var body: some View {
@@ -400,22 +399,17 @@ private struct StandbySwipeToAttendRow: View {
         } action: { newWidth in
             width = max(newWidth, 1)
         }
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 12)
-                .onChanged { value in
+        .overlay {
+            HorizontalPanGestureView(
+                onChanged: { translation in
                     guard !isCompleting else { return }
-                    if !isHorizontalDrag {
-                        guard abs(value.translation.width) > abs(value.translation.height) * 1.25 else { return }
-                        isHorizontalDrag = true
-                    }
-                    offset = value.translation.width
-                }
-                .onEnded { value in
-                    defer { isHorizontalDrag = false }
-                    guard isHorizontalDrag, !isCompleting else { return }
+                    offset = translation
+                },
+                onEnded: { translation, velocity in
+                    guard !isCompleting else { return }
 
-                    let distance = abs(value.translation.width)
-                    let predictedDistance = abs(value.predictedEndTranslation.width)
+                    let distance = abs(translation)
+                    let predictedDistance = abs(translation + velocity * 0.16)
                     let deliberate = distance >= max(72, width * 0.28)
                         || (distance >= 48 && predictedDistance >= width * 0.55)
 
@@ -426,7 +420,7 @@ private struct StandbySwipeToAttendRow: View {
                         return
                     }
 
-                    let direction: CGFloat = value.translation.width >= 0 ? 1 : -1
+                    let direction: CGFloat = translation >= 0 ? 1 : -1
                     AttnHaptics.success()
                     if reduceMotion {
                         isCompleting = true
@@ -439,14 +433,103 @@ private struct StandbySwipeToAttendRow: View {
                             onComplete()
                         }
                     }
+                },
+                onCancelled: {
+                    guard !isCompleting else { return }
+                    withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) {
+                        offset = 0
+                    }
                 }
-        )
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .accessibilityHidden(true)
+        }
         .accessibilityAction(named: Text("Mark attended")) {
             guard !isCompleting else { return }
             AttnHaptics.success()
             onComplete()
         }
         .accessibilityHint("Swipe left or right to mark attended")
+    }
+}
+
+/// A pan recognizer that declines vertical drags before they can compete
+/// with the enclosing ScrollView. Horizontal drags still complete the row.
+private struct HorizontalPanGestureView: UIViewRepresentable {
+    let onChanged: (CGFloat) -> Void
+    let onEnded: (CGFloat, CGFloat) -> Void
+    let onCancelled: () -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onChanged: onChanged, onEnded: onEnded, onCancelled: onCancelled)
+    }
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView(frame: .zero)
+        view.backgroundColor = .clear
+        view.isUserInteractionEnabled = true
+
+        let pan = UIPanGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handlePan(_:))
+        )
+        pan.delegate = context.coordinator
+        pan.cancelsTouchesInView = false
+        pan.delaysTouchesBegan = false
+        pan.maximumNumberOfTouches = 1
+        view.addGestureRecognizer(pan)
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        context.coordinator.onChanged = onChanged
+        context.coordinator.onEnded = onEnded
+        context.coordinator.onCancelled = onCancelled
+    }
+
+    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
+        var onChanged: (CGFloat) -> Void
+        var onEnded: (CGFloat, CGFloat) -> Void
+        var onCancelled: () -> Void
+
+        init(
+            onChanged: @escaping (CGFloat) -> Void,
+            onEnded: @escaping (CGFloat, CGFloat) -> Void,
+            onCancelled: @escaping () -> Void
+        ) {
+            self.onChanged = onChanged
+            self.onEnded = onEnded
+            self.onCancelled = onCancelled
+        }
+
+        func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+            guard let pan = gestureRecognizer as? UIPanGestureRecognizer else { return false }
+            let velocity = pan.velocity(in: pan.view)
+            return abs(velocity.x) > abs(velocity.y) * 1.25
+        }
+
+        func gestureRecognizer(
+            _ gestureRecognizer: UIGestureRecognizer,
+            shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+        ) -> Bool {
+            true
+        }
+
+        @objc func handlePan(_ pan: UIPanGestureRecognizer) {
+            let translation = pan.translation(in: pan.view).x
+            let velocity = pan.velocity(in: pan.view).x
+
+            switch pan.state {
+            case .began, .changed:
+                onChanged(translation)
+            case .ended:
+                onEnded(translation, velocity)
+            case .cancelled, .failed:
+                onCancelled()
+            default:
+                break
+            }
+        }
     }
 }
 
