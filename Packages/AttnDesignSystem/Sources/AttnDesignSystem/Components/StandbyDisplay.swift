@@ -19,23 +19,20 @@ public struct StandbyDisplayView: View {
     }
 
     public var body: some View {
-        GeometryReader { proxy in
-            // Standby is a living surface: the clock and the slow background
-            // motion share one animation timeline.
-            TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { context in
-                StandbyDisplayCanvas(
-                    date: context.date,
-                    onDismiss: { dismiss() }
-                )
-            }
-            // Let the window scene perform the orientation change. Do not
-            // rotate the SwiftUI content inside a portrait canvas, because
-            // that clips the landscape composition when rotation is denied.
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .ignoresSafeArea()
+        // Standby is a living surface: the clock and the slow background
+        // motion share one animation timeline.
+        TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { context in
+            StandbyDisplayCanvas(
+                date: context.date,
+                onDismiss: { dismiss() }
+            )
         }
-        .background(.black)
+        // Let the window scene perform the orientation change. Do not
+        // rotate the SwiftUI content inside a portrait canvas, because
+        // that clips the landscape composition when rotation is denied.
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea()
+        .background(.black)
         .statusBarHidden(true)
         .onAppear {
             StandbyOrientation.requestLandscape()
@@ -88,9 +85,6 @@ private struct StandbyDisplayCanvas: View {
     let onDismiss: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    private let blue = Color(red: 0, green: 159 / 255, blue: 254 / 255)
-    private let cream = Color(red: 249 / 255, green: 251 / 255, blue: 227 / 255)
 
     var body: some View {
         GeometryReader { proxy in
