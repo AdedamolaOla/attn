@@ -58,8 +58,8 @@ public struct AttnMascotQuestion: View {
                         .foregroundStyle(Color(red: 25 / 255, green: 25 / 255, blue: 25 / 255))
                         .offset(y: -width * 0.01)
                 }
-                .frame(width: width * 0.54, height: width * 0.42)
-                .offset(x: width * 0.08, y: width * 0.23)
+                .frame(width: width * 0.42, height: width * 0.34)
+                .offset(x: -width * 0.04, y: width * 0.23)
                 .accessibilityHidden(true)
         }
         .frame(width: width, height: width * CGFloat(2048) / CGFloat(1435))
