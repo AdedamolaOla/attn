@@ -212,7 +212,7 @@ private struct StandbyDisplayCanvas: View {
         ScrollView(.vertical) {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .center) {
-                    Text("Needs attn. (\\(pendingPriorities.count))")
+                    Text("Needs attn. (\(pendingPriorities.count))")
                         .font(.system(size: isPortrait ? 18 : 20, weight: .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
@@ -270,7 +270,7 @@ private struct StandbyDisplayCanvas: View {
         // inner viewport. The outer standby panel still clips to its corners.
         .scrollClipDisabled()
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("\\(pendingPriorities.count) things need attention")
+        .accessibilityLabel("\(pendingPriorities.count) things need attention")
     }
 
     private var pendingPriorities: [StandbyPriority] {
