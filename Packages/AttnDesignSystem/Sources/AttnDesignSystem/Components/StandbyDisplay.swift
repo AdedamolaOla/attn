@@ -85,6 +85,7 @@ private struct StandbyDisplayCanvas: View {
     let onDismiss: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var hasScrolledPastTop = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -135,9 +136,12 @@ private struct StandbyDisplayCanvas: View {
     }
 
     private func leftRail(mascotWidth: CGFloat) -> some View {
-        // Center the clock/date and mascot as one composition. There is no
-        // bottom spacer or fixed top offset to push the art out of the viewport.
-        VStack(spacing: 16) {
+        // The source mascot artwork ends mid-body. Keep the clock in its
+        // centered position, but let the artwork bleed below the display edge
+        // so its raster boundary can never appear as a line above the bezel.
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
+
             VStack(spacing: 8) {
                 Text(timeLabel)
                     .font(.custom(AttnAgbalumoFont.name, size: 72))
@@ -153,8 +157,11 @@ private struct StandbyDisplayCanvas: View {
                     .minimumScaleFactor(0.8)
             }
 
+            Spacer(minLength: 16)
+
             FloatingStandbyMascot(width: mascotWidth, reduceMotion: reduceMotion)
                 .frame(width: mascotWidth)
+                .offset(y: 20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .accessibilityElement(children: .combine)
@@ -237,6 +244,28 @@ private struct StandbyDisplayCanvas: View {
             }
             .onAppear {
                 scrollProxy.scrollTo("standby-attention-top", anchor: .top)
+            }
+            .onScrollGeometryChange(for: Bool.self) { geometry in
+                geometry.contentOffset.y > 2
+            } action: { _, isScrolled in
+                hasScrolledPastTop = isScrolled
+            }
+            .mask {
+                if hasScrolledPastTop {
+                    // A departing card dissolves at the scroll boundary
+                    // instead of leaving a clipped sliver above the next one.
+                    LinearGradient(
+                        stops: [
+                            .init(color: .clear, location: 0),
+                            .init(color: .black, location: 0.07),
+                            .init(color: .black, location: 1)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                } else {
+                    Rectangle()
+                }
             }
         }
         // The heading is intentionally inside the same scroll container as
