@@ -1,11 +1,16 @@
 import SwiftUI
 
 /// A visual, post-Gmail-connection analysis state.
-/// This is a mock phase: the percentage and sample timing are not tied to Gmail processing.
+/// The percentage is a timed prototype and is not connected to Gmail processing.
 public struct InboxAnalysisView: View {
+    private let startDate: Date
     private let onContinue: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    public init(onContinue: @escaping () -> Void = {}) {
+    private let analysisDuration: TimeInterval = 6
+
+    public init(startDate: Date = Date(), onContinue: @escaping () -> Void = {}) {
+        self.startDate = startDate
         self.onContinue = onContinue
     }
 
@@ -21,19 +26,25 @@ public struct InboxAnalysisView: View {
             )
             .ignoresSafeArea()
 
-            VStack(spacing: 16) {
-                analysisOrb
+            TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { timeline in
+                let elapsed = max(0, timeline.date.timeIntervalSince(startDate))
+                let progress = min(100, 1 + Int((elapsed / analysisDuration) * 99))
+                let phase = reduceMotion ? 0 : elapsed * (2 * .pi / 8.5)
 
-                Text("Analyzing your inbox & finding the few messages that deserve your attention.")
-                    .font(.system(size: 14, weight: .medium, design: .default))
-                    .foregroundStyle(Color(hex: 0x77767E))
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(2)
-                    .frame(width: 249)
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(spacing: 16) {
+                    analysisOrb(progress: progress, phase: phase)
+
+                    Text("Analyzing your inbox & finding the few messages that deserve your attention.")
+                        .font(.system(size: 14, weight: .medium, design: .default))
+                        .foregroundStyle(Color(hex: 0x77767E))
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(2)
+                        .frame(width: 249)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .offset(y: -25)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .offset(y: -25)
 
             closeButton
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
@@ -43,39 +54,94 @@ public struct InboxAnalysisView: View {
         .preferredColorScheme(.light)
     }
 
-    private var analysisOrb: some View {
-        Circle()
-            .fill(
-                LinearGradient(
-                    stops: [
-                        .init(color: Color(hex: 0xFFD600), location: 0),
-                        .init(color: Color(hex: 0xFFFFFF), location: 0.50),
-                        .init(color: Color(hex: 0x009FFE), location: 1)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+    private func analysisOrb(progress: Int, phase: TimeInterval) -> some View {
+        ZStack {
+            Circle()
+                .fill(
+                    LinearGradient(
+                        stops: [
+                            .init(color: Color(hex: 0xFFD600), location: 0),
+                            .init(color: Color(hex: 0xFFFFFF), location: 0.50),
+                            .init(color: Color(hex: 0x009FFE), location: 1)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
                 )
-            )
-            // Paint the blurred shadow ring inside the ellipse's mask. Clipping it here
-            // prevents any exterior/drop shadow from escaping the orb.
-            .overlay {
-                Circle()
-                    .stroke(Color(hex: 0x595959).opacity(0.25), lineWidth: 1)
-                    .blur(radius: 6.5)
-                    .offset(x: 0, y: -1)
-                    .clipShape(Circle())
-                    .allowsHitTesting(false)
+
+            GeometryReader { geometry in
+                let diameter = min(geometry.size.width, geometry.size.height)
+
+                ZStack {
+                    // Saturated color fields drift independently, so the orb feels active
+                    // without rotating as a single rigid object.
+                    RadialGradient(
+                        stops: [
+                            .init(color: Color(hex: 0xFFD600), location: 0),
+                            .init(color: Color(hex: 0xFFD600).opacity(0.98), location: 0.42),
+                            .init(color: Color(hex: 0xFFD600).opacity(0.70), location: 0.72),
+                            .init(color: Color(hex: 0xFFD600).opacity(0), location: 1)
+                        ],
+                        center: UnitPoint(x: 0.18, y: 0.17),
+                        startRadius: 0,
+                        endRadius: diameter * 0.82
+                    )
+                    .offset(
+                        x: sin(phase) * 9,
+                        y: cos(phase * 0.83) * 7
+                    )
+
+                    RadialGradient(
+                        stops: [
+                            .init(color: Color(hex: 0x009FFE), location: 0),
+                            .init(color: Color(hex: 0x009FFE).opacity(0.98), location: 0.44),
+                            .init(color: Color(hex: 0x009FFE).opacity(0.72), location: 0.76),
+                            .init(color: Color(hex: 0x009FFE).opacity(0), location: 1)
+                        ],
+                        center: UnitPoint(x: 0.84, y: 0.83),
+                        startRadius: 0,
+                        endRadius: diameter * 0.86
+                    )
+                    .offset(
+                        x: cos(phase * 0.74) * 10,
+                        y: sin(phase * 0.91) * 8
+                    )
+
+                    RadialGradient(
+                        stops: [
+                            .init(color: .white.opacity(0.40), location: 0),
+                            .init(color: .white.opacity(0.14), location: 0.48),
+                            .init(color: .white.opacity(0), location: 1)
+                        ],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: diameter * 0.34
+                    )
+                }
             }
-            .overlay {
-                Text("73%")
-                    .font(.system(size: 42, weight: .bold, design: .default))
-                    .foregroundStyle(Color(hex: 0x1B1B1B))
-                    .accessibilityHidden(true)
-            }
-            .frame(width: 203, height: 203)
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Analyzing your inbox")
-            .accessibilityValue("73 percent")
+            .clipShape(Circle())
+
+            // Inset ring is blurred and clipped to the ellipse, so it reads as an
+            // inner shadow only. No exterior drop shadow is applied.
+            Circle()
+                .stroke(Color(hex: 0x595959).opacity(0.25), lineWidth: 8)
+                .blur(radius: 6.5)
+                .offset(x: 0, y: -1)
+                .clipShape(Circle())
+                .blendMode(.multiply)
+                .allowsHitTesting(false)
+        }
+        .compositingGroup()
+        .frame(width: 203, height: 203)
+        .clipShape(Circle())
+        .overlay {
+            Text(String(progress) + "%")
+                .font(.system(size: 42, weight: .bold, design: .default))
+                .foregroundStyle(Color(hex: 0x1B1B1B))
+                .accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Analyzing your inbox")
     }
 
     private var closeButton: some View {
@@ -93,6 +159,7 @@ public struct InboxAnalysisView: View {
 
 public struct PostConnectionAnalysisFlow: View {
     @State private var showingHome = false
+    @State private var startDate = Date()
 
     public init() {}
 
@@ -102,7 +169,7 @@ public struct PostConnectionAnalysisFlow: View {
                 PriorityCardShowcase()
                     .transition(.opacity)
             } else {
-                InboxAnalysisView {
+                InboxAnalysisView(startDate: startDate) {
                     continueToHome()
                 }
                 .transition(.opacity)
@@ -111,7 +178,8 @@ public struct PostConnectionAnalysisFlow: View {
         .task {
             guard !showingHome else { return }
             do {
-                try await Task.sleep(for: .seconds(3.5))
+                // Let 100% stay visible briefly before continuing to Home.
+                try await Task.sleep(for: .seconds(6.6))
             } catch {
                 return
             }
