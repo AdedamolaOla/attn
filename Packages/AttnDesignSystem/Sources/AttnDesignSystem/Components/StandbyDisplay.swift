@@ -105,10 +105,10 @@ private struct StandbyDisplayCanvas: View {
             // canvases.
             let mascotWidth = finitePositive(
                 min(
-                    360,
+                    920,
                     min(
-                        railWidth - 8,
-                        contentHeight * 0.40 * (CGFloat(629) / CGFloat(343))
+                        railWidth - 16,
+                        contentHeight * 0.86 * (CGFloat(629) / CGFloat(343))
                     )
                 )
             )
@@ -148,7 +148,7 @@ private struct StandbyDisplayCanvas: View {
                     .foregroundStyle(.white.opacity(0.84))
             }
             .frame(maxWidth: .infinity)
-            .padding(.top, 14)
+            .padding(.top, 100)
 
             Spacer(minLength: 10)
 
