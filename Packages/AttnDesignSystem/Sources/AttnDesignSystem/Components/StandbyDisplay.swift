@@ -19,9 +19,9 @@ public struct StandbyDisplayView: View {
     }
 
     public var body: some View {
-        // Standby is a living surface: the clock and the slow background
-        // motion share one animation timeline.
-        TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { context in
+        // Only the clock needs periodic updates. The scrollable priorities
+        // keep a stable identity instead of being rebuilt sixty times a second.
+        TimelineView(.periodic(from: .now, by: 60)) { context in
             StandbyDisplayCanvas(
                 date: context.date,
                 onDismiss: { dismiss() }
@@ -88,45 +88,45 @@ private struct StandbyDisplayCanvas: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let horizontalInset: CGFloat = 24
-            let topInset: CGFloat = 24
-            let bottomInset: CGFloat = 0
-            let contentWidth = finitePositive(proxy.size.width - (horizontalInset * 2))
-            // Keep the top inset from the composition, but let the content
-            // run to the rounded bottom edge. A bottom inset here creates the
-            // visible horizontal cut line seen in the standby screenshot.
-            let contentHeight = finitePositive(proxy.size.height - topInset - bottomInset)
-            let railWidth = finitePositive(contentWidth * 0.48)
-            let attentionWidth = finitePositive(contentWidth - railWidth - 22)
-            // Keep enough vertical breathing room for the clock, date, and
-            // the mascot's transparent artwork bounds. This prevents the
-            // mascot from being cropped by the bottom edge on short landscape
-            // windows while preserving the larger treatment on iPad-sized
-            // canvases.
+            // All dimensions are measured from the actual landscape viewport.
+            // Decorative layers never participate in the HStack's layout size.
+            let horizontalInset: CGFloat = 16
+            let verticalInset: CGFloat = 8
+            let columnGap: CGFloat = 12
+            let contentWidth = finitePositive(proxy.size.width - 2 * horizontalInset)
+            let contentHeight = finitePositive(proxy.size.height - 2 * verticalInset)
+            let columnWidth = finitePositive((contentWidth - columnGap) / 2)
             let mascotWidth = finitePositive(
                 min(
-                    920,
-                    min(
-                        railWidth - 16,
-                        contentHeight * 0.86 * (CGFloat(629) / CGFloat(343))
-                    )
+                    columnWidth - 16,
+                    (contentHeight - 128) * (CGFloat(629) / CGFloat(343))
                 )
             )
 
-            ZStack {
-                AnimatedStandbyBackground(date: date, reduceMotion: reduceMotion)
+            HStack(alignment: .top, spacing: columnGap) {
+                leftRail(mascotWidth: mascotWidth)
+                    .frame(width: columnWidth, height: contentHeight)
 
-                HStack(alignment: .top, spacing: 22) {
-                    leftRail(mascotWidth: mascotWidth)
-                        .frame(width: railWidth, height: contentHeight, alignment: .top)
-
-                    attentionColumn
-                        .frame(width: attentionWidth, height: contentHeight, alignment: .top)
-                }
-                .frame(width: contentWidth, height: contentHeight, alignment: .topLeading)
-                .padding(.horizontal, horizontalInset)
-                .padding(.top, topInset)
-                .padding(.bottom, bottomInset)
+                attentionColumn
+                    .frame(width: columnWidth, height: contentHeight, alignment: .top)
+            }
+            .frame(width: contentWidth, height: contentHeight)
+            .padding(.horizontal, horizontalInset)
+            .padding(.vertical, verticalInset)
+            .frame(
+                width: proxy.size.width,
+                height: proxy.size.height,
+                alignment: .center
+            )
+            .background {
+                LinearGradient(
+                    colors: [
+                        Color(red: 0, green: 159 / 255, blue: 254 / 255),
+                        Color(red: 249 / 255, green: 251 / 255, blue: 227 / 255)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
             }
             .clipShape(RoundedRectangle(cornerRadius: 44, style: .continuous))
         }
@@ -135,28 +135,28 @@ private struct StandbyDisplayCanvas: View {
     }
 
     private func leftRail(mascotWidth: CGFloat) -> some View {
-        VStack(spacing: 0) {
+        // Center the clock/date and mascot as one composition. There is no
+        // bottom spacer or fixed top offset to push the art out of the viewport.
+        VStack(spacing: 16) {
             VStack(spacing: 8) {
                 Text(timeLabel)
                     .font(.custom(AttnAgbalumoFont.name, size: 72))
                     .tracking(-3)
                     .foregroundStyle(.white)
+                    .lineLimit(1)
                     .minimumScaleFactor(0.65)
 
                 Text(dateLabel)
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(.white.opacity(0.84))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.top, 100)
 
-            Spacer(minLength: 10)
-
-            FloatingStandbyMascot(width: mascotWidth, date: date, reduceMotion: reduceMotion)
-                .frame(width: mascotWidth, alignment: .center)
-                .padding(.bottom, 18)
+            FloatingStandbyMascot(width: mascotWidth, reduceMotion: reduceMotion)
+                .frame(width: mascotWidth)
         }
-        .frame(maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(timeLabel), \(dateLabel), attn mascot")
     }
@@ -230,8 +230,8 @@ private struct StandbyDisplayCanvas: View {
                 }
                 .padding(.bottom, 8)
             }
-            .padding(.horizontal, 22)
-            .padding(.vertical, 20)
+            .padding(.top, 8)
+            .padding(.bottom, 16)
         }
         // The heading is intentionally inside the same scroll container as
         // the priority cards so the list moves as one continuous surface.
@@ -256,118 +256,22 @@ private struct StandbyDisplayCanvas: View {
     }
 }
 
-private struct AnimatedStandbyBackground: View {
-    let date: Date
-    let reduceMotion: Bool
-
-    private let blue = Color(red: 0, green: 159 / 255, blue: 254 / 255)
-    private let cream = Color(red: 249 / 255, green: 251 / 255, blue: 227 / 255)
-
-    var body: some View {
-        // The standby surface is intentionally alive: large, soft color fields
-        // travel across the canvas instead of behaving like a static wallpaper.
-        let phase = date.timeIntervalSinceReferenceDate * 0.30
-
-        ZStack {
-            LinearGradient(
-                colors: [blue, cream],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-
-            if !reduceMotion {
-                // Blue field sweeps diagonally from the lower-left toward
-                // the upper-right on a long, calm loop.
-                RoundedRectangle(cornerRadius: 260, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                blue.opacity(0.95),
-                                blue.opacity(0.42),
-                                Color.white.opacity(0.08)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 920, height: 500)
-                    .blur(radius: 92)
-                    .rotationEffect(.degrees(Double(sin(phase * 0.52) * 12)))
-                    .offset(
-                        x: CGFloat(cos(phase * 0.82) * 250),
-                        y: CGFloat(sin(phase * 0.64) * 135)
-                    )
-
-                // A warm, pale counter-field keeps the motion dimensional
-                // without introducing a noisy animated texture.
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                cream.opacity(0.92),
-                                Color.white.opacity(0.38),
-                                .clear
-                            ],
-                            center: .center,
-                            startRadius: 10,
-                            endRadius: 300
-                        )
-                    )
-                    .frame(width: 650, height: 650)
-                    .blur(radius: 82)
-                    .offset(
-                        x: CGFloat(sin(phase * 0.58) * 235),
-                        y: CGFloat(cos(phase * 0.76) * 105)
-                    )
-
-                // A restrained sheen slowly rotates through the moving fields.
-                LinearGradient(
-                    colors: [.clear, .white.opacity(0.18), .clear],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-                .frame(width: 1100, height: 420)
-                .rotationEffect(.degrees(Double(sin(phase * 0.36) * 14)))
-                .offset(x: CGFloat(cos(phase * 0.44) * 180))
-                .blendMode(.screen)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .drawingGroup()
-        .accessibilityHidden(true)
-    }
-}
-
 private struct FloatingStandbyMascot: View {
     let width: CGFloat
-    let date: Date
     let reduceMotion: Bool
 
     var body: some View {
-        let phase = date.timeIntervalSinceReferenceDate
-            .truncatingRemainder(dividingBy: 7.6) / 7.6 * Double.pi * 2
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
+            let phase = context.date.timeIntervalSinceReferenceDate
+                .truncatingRemainder(dividingBy: 7.6) / 7.6 * Double.pi * 2
 
-        Group {
-            if reduceMotion {
-                mascot(offset: .zero, scale: 1)
-            } else {
-                mascot(
-                    offset: CGSize(
-                        width: CGFloat(sin(phase) * 2.5),
-                        height: CGFloat(cos(phase * 0.82) * 2.2)
-                    ),
-                    scale: 1.004 + CGFloat(sin(phase * 0.5) * 0.002)
+            AttnMascotQuestion(width: width)
+                .offset(
+                    x: reduceMotion ? 0 : CGFloat(sin(phase) * 2.5),
+                    y: reduceMotion ? 0 : CGFloat(cos(phase * 0.82) * 2.2)
                 )
-            }
         }
         .accessibilityHidden(true)
-    }
-
-    private func mascot(offset: CGSize, scale: CGFloat) -> some View {
-        AttnMascotQuestion(width: width)
-            .offset(offset)
-            .scaleEffect(scale)
-            .frame(maxWidth: .infinity, alignment: .center)
     }
 }
 
