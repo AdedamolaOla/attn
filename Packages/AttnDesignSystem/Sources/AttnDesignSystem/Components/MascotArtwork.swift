@@ -17,7 +17,9 @@ public struct AttnMascot: View {
 
     public var body: some View {
         Group {
-            if let image = (reduceMotion ? nil : AttnMascotImage.animated) ?? AttnMascotImage.still {
+            if !reduceMotion, let animated = AttnMascotImage.animated {
+                AnimatedMascotImageView(image: animated)
+            } else if let image = AttnMascotImage.still {
                 Image(uiImage: image)
                     .resizable()
                     .interpolation(.high)
@@ -32,6 +34,30 @@ public struct AttnMascot: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText)
         .accessibilityAddTraits(.isImage)
+    }
+}
+
+private struct AnimatedMascotImageView: UIViewRepresentable {
+    let image: UIImage
+
+    func makeUIView(context: Context) -> UIImageView {
+        let view = UIImageView()
+        view.contentMode = .scaleAspectFit
+        view.animationImages = image.images
+        view.animationDuration = image.duration
+        view.animationRepeatCount = 0
+        view.startAnimating()
+        return view
+    }
+
+    func updateUIView(_ view: UIImageView, context: Context) {
+        if !view.isAnimating {
+            view.startAnimating()
+        }
+    }
+
+    static func dismantleUIView(_ view: UIImageView, coordinator: ()) {
+        view.stopAnimating()
     }
 }
 
