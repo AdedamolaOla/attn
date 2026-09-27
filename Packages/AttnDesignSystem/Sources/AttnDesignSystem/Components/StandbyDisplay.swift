@@ -270,7 +270,7 @@ private struct StandbyDisplayCanvas: View {
                     Rectangle()
                 }
             }
-            .overlay(alignment: .bottom) {
+            .safeAreaInset(edge: .bottom, spacing: 0) {
                 if let lastAttendedID,
                    let priority = priorities.first(where: { $0.id == lastAttendedID }) {
                     HStack(spacing: 12) {
