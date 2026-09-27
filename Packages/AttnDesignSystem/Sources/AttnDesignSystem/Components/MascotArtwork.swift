@@ -17,8 +17,17 @@ public struct AttnMascot: View {
 
     public var body: some View {
         Group {
-            if !reduceMotion, let animated = AttnMascotImage.animated {
-                AnimatedMascotImageView(image: animated)
+            if !reduceMotion, !AttnMascotImage.animationFrames.isEmpty {
+                TimelineView(.animation(minimumInterval: 1.0 / 15.0)) { context in
+                    let frames = AttnMascotImage.animationFrames
+                    let frameIndex = Int(context.date.timeIntervalSinceReferenceDate * 15)
+                        % frames.count
+
+                    Image(uiImage: frames[frameIndex])
+                        .resizable()
+                        .interpolation(.high)
+                        .scaledToFit()
+                }
             } else if let image = AttnMascotImage.still {
                 Image(uiImage: image)
                     .resizable()
@@ -34,30 +43,6 @@ public struct AttnMascot: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText)
         .accessibilityAddTraits(.isImage)
-    }
-}
-
-private struct AnimatedMascotImageView: UIViewRepresentable {
-    let image: UIImage
-
-    func makeUIView(context: Context) -> UIImageView {
-        let view = UIImageView()
-        view.contentMode = .scaleAspectFit
-        view.animationImages = image.images
-        view.animationDuration = image.duration
-        view.animationRepeatCount = 0
-        view.startAnimating()
-        return view
-    }
-
-    func updateUIView(_ view: UIImageView, context: Context) {
-        if !view.isAnimating {
-            view.startAnimating()
-        }
-    }
-
-    static func dismantleUIView(_ view: UIImageView, coordinator: ()) {
-        view.stopAnimating()
     }
 }
 
@@ -84,8 +69,8 @@ public struct AttnMascotQuestion: View {
                         .foregroundStyle(Color(red: 25 / 255, green: 25 / 255, blue: 25 / 255))
                         .offset(y: -width * 0.01)
                 }
-                .frame(width: width * 0.42, height: width * 0.34)
-                .offset(x: -width * 0.04, y: width * 0.23)
+                .frame(width: width * 0.422, height: width * 0.356)
+                .offset(x: -width * 0.054, y: width * 0.236)
                 .accessibilityHidden(true)
         }
         .frame(width: width, height: width * CGFloat(2048) / CGFloat(1435))
@@ -120,7 +105,7 @@ public struct AttnMascotBadge: View {
                         )
                     )
 
-                AttnMascot(width: size * 0.38)
+                AttnMascot(width: size * 0.464)
                     .offset(y: size * 0.01)
                     .accessibilityHidden(true)
             }
@@ -163,25 +148,21 @@ private enum AttnMascotImage {
         return UIImage(data: data)
     }()
 
-    static let animated: UIImage? = {
+    static let animationFrames: [UIImage] = {
         guard
             let data = Data(base64Encoded: AttnMascotAnimationGIF.base64),
             let source = CGImageSourceCreateWithData(data as CFData, nil)
-        else { return nil }
+        else { return [] }
 
         let count = CGImageSourceGetCount(source)
-        guard count > 1 else { return still }
+        guard count > 1 else { return [] }
 
-        var frames: [UIImage] = []
-        frames.reserveCapacity(count)
-        for index in 0..<count {
-            guard let frame = CGImageSourceCreateImageAtIndex(source, index, nil) else { continue }
-            frames.append(UIImage(cgImage: frame, scale: 1, orientation: .up))
+        return (0..<count).compactMap { index in
+            guard let frame = CGImageSourceCreateImageAtIndex(source, index, nil) else { return nil }
+            return UIImage(cgImage: frame, scale: 1, orientation: .up)
         }
-
-        guard frames.count > 1 else { return still }
-        return UIImage.animatedImage(with: frames, duration: Double(frames.count) / 15.0)
     }()
+
 }
 
 private enum AttnMascotStillPNG {
