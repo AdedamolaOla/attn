@@ -3,7 +3,7 @@ import AttnDesignSystem
 
 struct ContentView: View {
     var body: some View {
-        PriorityCardShowcase()
+        PostConnectionAnalysisFlow()
     }
 }
 
