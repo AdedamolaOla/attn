@@ -116,7 +116,7 @@ private struct StandbyDisplayCanvas: View {
             ZStack {
                 AnimatedStandbyBackground(date: date, reduceMotion: reduceMotion)
 
-                HStack(spacing: 22) {
+                HStack(alignment: .top, spacing: 22) {
                     leftRail(mascotWidth: mascotWidth)
                         .frame(width: railWidth)
 
@@ -264,7 +264,9 @@ private struct AnimatedStandbyBackground: View {
     private let cream = Color(red: 249 / 255, green: 251 / 255, blue: 227 / 255)
 
     var body: some View {
-        let phase = date.timeIntervalSinceReferenceDate * 0.22
+        // The standby surface is intentionally alive: large, soft color fields
+        // travel across the canvas instead of behaving like a static wallpaper.
+        let phase = date.timeIntervalSinceReferenceDate * 0.30
 
         ZStack {
             LinearGradient(
@@ -274,30 +276,59 @@ private struct AnimatedStandbyBackground: View {
             )
 
             if !reduceMotion {
-                Circle()
-                    .fill(blue.opacity(0.34))
-                    .frame(width: 620, height: 620)
-                    .blur(radius: 84)
+                // Blue field sweeps diagonally from the lower-left toward
+                // the upper-right on a long, calm loop.
+                RoundedRectangle(cornerRadius: 260, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                blue.opacity(0.95),
+                                blue.opacity(0.42),
+                                Color.white.opacity(0.08)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 920, height: 500)
+                    .blur(radius: 92)
+                    .rotationEffect(.degrees(Double(sin(phase * 0.52) * 12)))
                     .offset(
-                        x: CGFloat(sin(phase) * 170),
-                        y: CGFloat(cos(phase * 0.78) * 70)
+                        x: CGFloat(cos(phase * 0.82) * 250),
+                        y: CGFloat(sin(phase * 0.64) * 135)
                     )
 
+                // A warm, pale counter-field keeps the motion dimensional
+                // without introducing a noisy animated texture.
                 Circle()
-                    .fill(Color.white.opacity(0.26))
-                    .frame(width: 520, height: 520)
-                    .blur(radius: 96)
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                cream.opacity(0.92),
+                                Color.white.opacity(0.38),
+                                .clear
+                            ],
+                            center: .center,
+                            startRadius: 10,
+                            endRadius: 300
+                        )
+                    )
+                    .frame(width: 650, height: 650)
+                    .blur(radius: 82)
                     .offset(
-                        x: CGFloat(cos(phase * 0.68) * 190),
-                        y: CGFloat(sin(phase * 0.86) * 120)
+                        x: CGFloat(sin(phase * 0.58) * 235),
+                        y: CGFloat(cos(phase * 0.76) * 105)
                     )
 
+                // A restrained sheen slowly rotates through the moving fields.
                 LinearGradient(
-                    colors: [.clear, .white.opacity(0.12), .clear],
+                    colors: [.clear, .white.opacity(0.18), .clear],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
-                .rotationEffect(.degrees(Double(sin(phase * 0.42) * 8)))
+                .frame(width: 1100, height: 420)
+                .rotationEffect(.degrees(Double(sin(phase * 0.36) * 14)))
+                .offset(x: CGFloat(cos(phase * 0.44) * 180))
                 .blendMode(.screen)
             }
         }
