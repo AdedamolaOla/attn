@@ -295,105 +295,22 @@ private struct StandbyDisplayCanvas: View {
     }
 }
 
-/// A restrained repeating dance for the standby surface.
-///
-/// Choreography (one 6.4 second cycle):
-/// 0.00–0.45s  Anticipation: settle down and widen slightly.
-/// 0.45–1.00s  Lift: quick stretch with a small leftward tilt, then rebound.
-/// 1.00–3.20s  Dance: two alternating left/right weight shifts with soft beats.
-/// 3.47–4.35s  Hop: rise, squash on landing, and recover.
-/// 4.35–6.40s  Rest: hold a calm pose before the next phrase.
-///
-/// The source illustration stays a single, unmodified image layer. This keeps
-/// the approved face and silhouette intact while the full character moves as
-/// one, and leaves enough layout clearance for every pose without clipping.
 private struct FloatingStandbyMascot: View {
     let width: CGFloat
     let reduceMotion: Bool
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 60.0, paused: reduceMotion)) { context in
-            let pose = reduceMotion
-                ? MascotDancePose.rest
-                : MascotDancePose.pose(at: context.date.timeIntervalSinceReferenceDate)
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
+            let phase = context.date.timeIntervalSinceReferenceDate
+                .truncatingRemainder(dividingBy: 7.6) / 7.6 * Double.pi * 2
 
             AttnMascotQuestion(width: width)
-                .scaleEffect(x: pose.scaleX, y: pose.scaleY, anchor: .bottom)
-                .rotationEffect(.degrees(Double(pose.rotation)), anchor: .bottom)
-                .offset(x: pose.x, y: pose.y)
-                .compositingGroup()
+                .offset(
+                    x: reduceMotion ? 0 : CGFloat(sin(phase) * 2.5),
+                    y: reduceMotion ? 0 : CGFloat(cos(phase * 0.82) * 2.2)
+                )
         }
         .accessibilityHidden(true)
-    }
-}
-
-private struct MascotDancePose {
-    var x: CGFloat
-    var y: CGFloat
-    var rotation: CGFloat
-    var scaleX: CGFloat
-    var scaleY: CGFloat
-
-    static let rest = MascotDancePose(x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1)
-
-    private static let cycleDuration: TimeInterval = 6.4
-
-    private static let choreography: [(time: TimeInterval, pose: MascotDancePose)] = [
-        (0.00, rest),
-        // Anticipation and a springy first lift.
-        (0.45, MascotDancePose(x: 0, y: 5, rotation: 0, scaleX: 1.045, scaleY: 0.92)),
-        (0.74, MascotDancePose(x: -5, y: -10, rotation: -5, scaleX: 0.96, scaleY: 1.085)),
-        (1.00, MascotDancePose(x: -4, y: -4, rotation: -3, scaleX: 1.02, scaleY: 1.01)),
-        // Two-step sway. Each weight shift has a small center rebound.
-        (1.35, MascotDancePose(x: -9, y: 0, rotation: -7, scaleX: 1.025, scaleY: 0.985)),
-        (1.68, MascotDancePose(x: 0, y: -4, rotation: 0, scaleX: 0.985, scaleY: 1.04)),
-        (2.00, MascotDancePose(x: 9, y: 0, rotation: 7, scaleX: 1.025, scaleY: 0.985)),
-        (2.32, MascotDancePose(x: 0, y: -4, rotation: 0, scaleX: 0.985, scaleY: 1.04)),
-        (2.63, MascotDancePose(x: -8, y: 0, rotation: -6, scaleX: 1.025, scaleY: 0.985)),
-        (2.94, MascotDancePose(x: 8, y: 0, rotation: 6, scaleX: 1.025, scaleY: 0.985)),
-        (3.20, rest),
-        // A distinct little hop, soft squash on landing, then settle.
-        (3.47, MascotDancePose(x: 0, y: 4, rotation: 0, scaleX: 1.035, scaleY: 0.93)),
-        (3.70, MascotDancePose(x: 0, y: -13, rotation: 0, scaleX: 0.97, scaleY: 1.085)),
-        (3.88, MascotDancePose(x: 0, y: 4, rotation: 0, scaleX: 1.055, scaleY: 0.90)),
-        (4.10, MascotDancePose(x: 0, y: -3, rotation: 0, scaleX: 0.985, scaleY: 1.04)),
-        (4.35, rest),
-        // A quiet, friendly sway before the loop returns to anticipation.
-        (5.00, MascotDancePose(x: 4, y: 0, rotation: 3, scaleX: 1.01, scaleY: 0.995)),
-        (5.35, MascotDancePose(x: 0, y: -2, rotation: 0, scaleX: 0.995, scaleY: 1.015)),
-        (cycleDuration, rest)
-    ]
-
-    static func pose(at time: TimeInterval) -> MascotDancePose {
-        let wrappedTime = ((time.truncatingRemainder(dividingBy: cycleDuration))
-            + cycleDuration)
-            .truncatingRemainder(dividingBy: cycleDuration)
-
-        guard let nextIndex = choreography.firstIndex(where: { $0.time >= wrappedTime }),
-              nextIndex > 0 else {
-            return rest
-        }
-
-        let previous = choreography[nextIndex - 1]
-        let next = choreography[nextIndex]
-        let duration = next.time - previous.time
-        guard duration > 0 else { return next.pose }
-
-        let linearProgress = CGFloat((wrappedTime - previous.time) / duration)
-        // Cubic ease-in/ease-out gives each pose a soft arrival and departure.
-        let easedProgress = linearProgress * linearProgress * (3 - 2 * linearProgress)
-
-        return MascotDancePose(
-            x: interpolate(previous.pose.x, next.pose.x, easedProgress),
-            y: interpolate(previous.pose.y, next.pose.y, easedProgress),
-            rotation: interpolate(previous.pose.rotation, next.pose.rotation, easedProgress),
-            scaleX: interpolate(previous.pose.scaleX, next.pose.scaleX, easedProgress),
-            scaleY: interpolate(previous.pose.scaleY, next.pose.scaleY, easedProgress)
-        )
-    }
-
-    private static func interpolate(_ from: CGFloat, _ to: CGFloat, _ progress: CGFloat) -> CGFloat {
-        from + (to - from) * progress
     }
 }
 
