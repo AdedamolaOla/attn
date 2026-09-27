@@ -97,8 +97,8 @@ public struct AttnMascotBadge: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color(red: 0, green: 159 / 255, blue: 254 / 255),
-                                Color(red: 249 / 255, green: 251 / 255, blue: 227 / 255)
+                                Color(red: 0, green: 159.0 / 255.0, blue: 254.0 / 255.0),
+                                Color(red: 249.0 / 255.0, green: 251.0 / 255.0, blue: 227.0 / 255.0)
                             ],
                             startPoint: .top,
                             endPoint: .bottom
