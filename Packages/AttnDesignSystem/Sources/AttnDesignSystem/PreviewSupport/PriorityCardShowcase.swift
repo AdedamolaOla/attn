@@ -4,9 +4,11 @@ import SwiftUI
 public struct PriorityCardShowcase: View {
     @State private var selection: TodaySection = .immediate
     @State private var reviewed: Set<String> = []
+    @State private var attended: Set<String> = []
     @State private var notice = ""
     @State private var showingNotice = false
     @State private var showingProfile = false
+    @State private var showingStandby = false
 
     public init() {}
 
@@ -18,27 +20,34 @@ public struct PriorityCardShowcase: View {
                         TodayBriefingHeader(
                             date: context.date,
                             selection: $selection,
-                            onProfile: { showingProfile = true }
+                            onProfile: { showingProfile = true },
+                            onMascot: { showingStandby = true }
                         )
                     }
                     .padding(.bottom, 8)
                     if selection == .immediate {
-                    sample(id: "payment", title: "Credit card payment", timing: "Due today",
-                           sender: "RBC Mastercard", initials: "RBC",
-                           tone: AttnColors.priorityBlue,
-                           logoColor: Color(red: 19 / 255, green: 94 / 255, blue: 171 / 255))
-                    sample(id: "flight", title: "Flight check-in", timing: "Opens in 3 hours",
-                           sender: "Example Air", initials: "EA",
-                           tone: AttnColors.priorityGreen, logoColor: Color(red: 0.04, green: 0.32, blue: 0.19))
+                    if !attended.contains("payment") {
+                        sample(id: "payment", title: "Credit card payment", timing: "Due today",
+                               sender: "RBC Mastercard", initials: "RBC",
+                               tone: AttnColors.priorityBlue,
+                               logoColor: Color(red: 19 / 255, green: 94 / 255, blue: 171 / 255))
+                    }
+                    if !attended.contains("flight") {
+                        sample(id: "flight", title: "Flight check-in", timing: "Opens in 3 hours",
+                               sender: "Example Air", initials: "EA",
+                               tone: AttnColors.priorityGreen, logoColor: Color(red: 0.04, green: 0.32, blue: 0.19))
+                    }
                     sample(id: "uncertain", title: "Possible appointment change", timing: "Timing unconfirmed",
                            sender: "Example Clinic", initials: "EC",
                            tone: AttnColors.priorityCyan, logoColor: Color(red: 0.02, green: 0.31, blue: 0.38),
                            attention: .needsReview)
                     } else {
-                    sample(id: "interview", title: "Interview", timing: "Tomorrow · 9:30 AM",
-                           sender: "Example Studio", initials: "ES",
-                           tone: AttnColors.priorityOrange, logoColor: Color(red: 0.48, green: 0.19, blue: 0.02),
-                           attention: .upcoming)
+                    if !attended.contains("interview-tomorrow") {
+                        sample(id: "interview", title: "Interview", timing: "Tomorrow · 9:30 AM",
+                               sender: "Example Studio", initials: "ES",
+                               tone: AttnColors.priorityOrange, logoColor: Color(red: 0.48, green: 0.19, blue: 0.02),
+                               attention: .upcoming)
+                    }
                     }
                     Text("Sample priorities · Gmail is not connected")
                         .font(AttnTypography.footnote)
@@ -54,6 +63,9 @@ public struct PriorityCardShowcase: View {
             } message: { Text(notice) }
         }
         .fullScreenCover(isPresented: $showingProfile) { ProfileView() }
+        .fullScreenCover(isPresented: $showingStandby) {
+            StandbyDisplayView(attendedIDs: $attended)
+        }
     }
 
     private func sample(
