@@ -32,6 +32,7 @@ public struct StandbyDisplayView: View {
             // rotate the SwiftUI content inside a portrait canvas, because
             // that clips the landscape composition when rotation is denied.
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .ignoresSafeArea()
         }
         .background(.black)
         .ignoresSafeArea()
@@ -94,9 +95,13 @@ private struct StandbyDisplayCanvas: View {
     var body: some View {
         GeometryReader { proxy in
             let horizontalInset: CGFloat = 24
-            let verticalInset: CGFloat = 24
+            let topInset: CGFloat = 24
+            let bottomInset: CGFloat = 0
             let contentWidth = finitePositive(proxy.size.width - (horizontalInset * 2))
-            let contentHeight = finitePositive(proxy.size.height - (verticalInset * 2))
+            // Keep the top inset from the composition, but let the content
+            // run to the rounded bottom edge. A bottom inset here creates the
+            // visible horizontal cut line seen in the standby screenshot.
+            let contentHeight = finitePositive(proxy.size.height - topInset - bottomInset)
             let railWidth = finitePositive(contentWidth * 0.39)
             let attentionWidth = finitePositive(contentWidth - railWidth - 22)
             // Keep enough vertical breathing room for the clock, date, and
@@ -126,7 +131,8 @@ private struct StandbyDisplayCanvas: View {
                 }
                 .frame(width: contentWidth, height: contentHeight, alignment: .topLeading)
                 .padding(.horizontal, horizontalInset)
-                .padding(.vertical, verticalInset)
+                .padding(.top, topInset)
+                .padding(.bottom, bottomInset)
             }
             .clipShape(RoundedRectangle(cornerRadius: 44, style: .continuous))
         }
