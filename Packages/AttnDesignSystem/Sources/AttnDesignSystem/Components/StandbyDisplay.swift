@@ -152,7 +152,7 @@ private struct StandbyDisplayCanvas: View {
 
             Spacer(minLength: 10)
 
-            FloatingStandbyMascot(width: mascotWidth, reduceMotion: reduceMotion)
+            FloatingStandbyMascot(width: mascotWidth, date: date, reduceMotion: reduceMotion)
                 .frame(width: mascotWidth, alignment: .center)
                 .padding(.bottom, 18)
         }
@@ -309,24 +309,24 @@ private struct AnimatedStandbyBackground: View {
 
 private struct FloatingStandbyMascot: View {
     let width: CGFloat
+    let date: Date
     let reduceMotion: Bool
 
     var body: some View {
+        let phase = date.timeIntervalSinceReferenceDate
+            .truncatingRemainder(dividingBy: 7.6) / 7.6 * Double.pi * 2
+
         Group {
             if reduceMotion {
                 mascot(offset: .zero, scale: 1)
             } else {
-                TimelineView(.animation) { context in
-                    let phase = context.date.timeIntervalSinceReferenceDate
-                        .truncatingRemainder(dividingBy: 7.6) / 7.6 * Double.pi * 2
-                    mascot(
-                        offset: CGSize(
-                            width: CGFloat(sin(phase) * 2.5),
-                            height: CGFloat(cos(phase * 0.82) * 2.2)
-                        ),
-                        scale: 1.004 + CGFloat(sin(phase * 0.5) * 0.002)
-                    )
-                }
+                mascot(
+                    offset: CGSize(
+                        width: CGFloat(sin(phase) * 2.5),
+                        height: CGFloat(cos(phase * 0.82) * 2.2)
+                    ),
+                    scale: 1.004 + CGFloat(sin(phase * 0.5) * 0.002)
+                )
             }
         }
         .accessibilityHidden(true)
