@@ -19,7 +19,6 @@ public struct WelcomeView: View {
     @State private var bodyVisible = false
     @State private var privacyVisible = false
     @State private var hasStartedEntrance = false
-    @State private var gradientDrift: CGFloat = 0
 
     public init(onConnectMail: @escaping () -> Void = {}) {
         self.onConnectMail = onConnectMail
@@ -46,7 +45,11 @@ public struct WelcomeView: View {
                 : min(size.width * 0.75, size.height * 0.42 * 2.15)
 
             ZStack {
-                movingBackground(in: size)
+                OnboardingGradientBackground(
+                    bottomColor: Color(hex: 0xF9FBE3),
+                    bottomColorLocation: 1,
+                    animates: true
+                )
 
                 // The export is cropped to its cloud/footer portion. Its original
                 // shapes and button artwork remain intact; only the gradient above
@@ -139,22 +142,6 @@ public struct WelcomeView: View {
         .tint(Color(hex: 0x087FF5))
     }
 
-    private func movingBackground(in size: CGSize) -> some View {
-        LinearGradient(
-            stops: [
-                .init(color: Color(hex: 0x009FFE), location: 0),
-                .init(color: Color(hex: 0xF9FBE3), location: 1)
-            ],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .frame(width: size.width, height: size.height + 56)
-        .offset(y: -28 + (reduceMotion ? 0 : gradientDrift))
-        .frame(width: size.width, height: size.height)
-        .clipped()
-        .accessibilityHidden(true)
-    }
-
     private func welcomeCopy(in size: CGSize, isLandscape: Bool) -> some View {
         VStack(spacing: 9) {
             Text("Know what deserves\nyour attention.")
@@ -231,12 +218,6 @@ public struct WelcomeView: View {
     private func startEntrance() {
         guard !hasStartedEntrance else { return }
         hasStartedEntrance = true
-        if !reduceMotion {
-            withAnimation(.easeInOut(duration: 11).repeatForever(autoreverses: true)) {
-                gradientDrift = 56
-            }
-        }
-
         Task { @MainActor in
             if reduceMotion {
                 withAnimation(.easeOut(duration: 0.22)) {
