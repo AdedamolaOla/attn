@@ -53,7 +53,7 @@ public struct ConfirmAccountView: View {
                 OnboardingGradientBackground(
                     bottomColor: .white.opacity(0.5),
                     bottomColorLocation: 1,
-                    topColorEndLocation: 0.65,
+                    topColorEndLocation: 0.5,
                     animates: true
                 )
 
