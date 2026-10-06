@@ -91,7 +91,7 @@ struct OnboardingActionButton: View {
                 .contentShape(Capsule())
         }
         .buttonStyle(OnboardingPressButtonStyle())
-        .environment(\\.colorScheme, .light)
+        .environment(\.colorScheme, .light)
     }
 }
 
