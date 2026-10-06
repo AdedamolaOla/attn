@@ -53,7 +53,7 @@ public struct ConfirmAccountView: View {
                 OnboardingGradientBackground(
                     bottomColor: .white.opacity(0.5),
                     bottomColorLocation: 1,
-                    topColorEndLocation: 0.3,
+                    topColorEndLocation: 0.1,
                     animates: true
                 )
 
@@ -85,14 +85,14 @@ public struct ConfirmAccountView: View {
 
     private func confirmationCopy(width: CGFloat) -> some View {
         VStack(spacing: 9) {
-            Text("Confirm your Gmail account")
+            Text("Confirm your mail")
                 .font(.system(size: titleSize, weight: .bold))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
 
-            Text("Make sure this is the inbox you want attn to monitor.")
+            Text("Your email is now connected. Confirm your email to continue with attn")
                 .font(.system(size: bodySize, weight: .medium))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
