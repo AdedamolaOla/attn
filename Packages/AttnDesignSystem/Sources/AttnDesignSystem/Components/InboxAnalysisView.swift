@@ -55,26 +55,55 @@ public struct InboxAnalysisView: View {
     }
 
     private func analysisOrb(progress: Int, phase: TimeInterval) -> some View {
-        // Rotate the gradient axis around the orb so the colors sweep
-        // visibly through it instead of shifting by only a few points.
-        let angle = phase * 0.72
-        let axisX = CGFloat(cos(angle)) * 0.48
-        let axisY = CGFloat(sin(angle)) * 0.48
-        let whiteStop = 0.50 + CGFloat(sin(phase * 0.43)) * 0.06
+        GeometryReader { geometry in
+            let size = geometry.size
+            let motion = CGFloat(phase)
 
-        return Circle()
-            .fill(
-                LinearGradient(
-                    stops: [
-                        .init(color: Color(hex: 0xFFD600), location: 0),
-                        .init(color: Color(hex: 0xFFFFFF), location: whiteStop),
-                        .init(color: Color(hex: 0x009FFE), location: 1)
-                    ],
-                    startPoint: UnitPoint(x: 0.5 - axisX, y: 0.5 - axisY),
-                    endPoint: UnitPoint(x: 0.5 + axisX, y: 0.5 + axisY)
+            // The glass bulb stays still. Only its three soft color fields drift.
+            let yellowX = 0.35 + 0.16 * sin(motion * 0.78)
+            let yellowY = 0.36 + 0.12 * cos(motion * 0.64)
+            let blueX = 0.67 + 0.15 * sin(motion * 0.71 + 2.2)
+            let blueY = 0.65 + 0.14 * cos(motion * 0.83 + 1.2)
+            let whiteX = 0.50 + 0.11 * sin(motion * 0.53 + 4.3)
+            let whiteY = 0.49 + 0.10 * cos(motion * 0.62 + 2.8)
+
+            ZStack {
+                Circle()
+                    .fill(Color.white)
+
+                blurredColorCircle(
+                    Color(hex: 0xFFD600),
+                    diameter: 142,
+                    blur: 42,
+                    opacity: 1,
+                    size: size,
+                    x: yellowX,
+                    y: yellowY
                 )
-            )
-            // Keep the shadow on the orb's inner edge and clip it to the ellipse.
+
+                blurredColorCircle(
+                    Color(hex: 0x009FFE),
+                    diameter: 142,
+                    blur: 42,
+                    opacity: 1,
+                    size: size,
+                    x: blueX,
+                    y: blueY
+                )
+
+                blurredColorCircle(
+                    .white,
+                    diameter: 84,
+                    blur: 30,
+                    opacity: 0.78,
+                    size: size,
+                    x: whiteX,
+                    y: whiteY
+                )
+            }
+            .frame(width: size.width, height: size.height)
+            .clipShape(Circle())
+            // Keep the existing inner shadow fixed to the outer bulb.
             .overlay {
                 Circle()
                     .stroke(Color(hex: 0x595959).opacity(0.25), lineWidth: 8)
@@ -85,8 +114,6 @@ public struct InboxAnalysisView: View {
                     .allowsHitTesting(false)
             }
             .compositingGroup()
-            .frame(width: 203, height: 203)
-            .clipShape(Circle())
             .overlay {
                 Text(String(progress) + "%")
                     .font(.system(size: 42, weight: .bold, design: .default))
@@ -95,6 +122,26 @@ public struct InboxAnalysisView: View {
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("Analyzing your inbox")
+        }
+        .frame(width: 203, height: 203)
+    }
+
+    private func blurredColorCircle(
+        _ color: Color,
+        diameter: CGFloat,
+        blur: CGFloat,
+        opacity: Double,
+        size: CGSize,
+        x: CGFloat,
+        y: CGFloat
+    ) -> some View {
+        Circle()
+            .fill(color)
+            .frame(width: diameter, height: diameter)
+            .blur(radius: blur)
+            .opacity(opacity)
+            .position(x: size.width * x, y: size.height * y)
+            .allowsHitTesting(false)
     }
 
     private var closeButton: some View {
