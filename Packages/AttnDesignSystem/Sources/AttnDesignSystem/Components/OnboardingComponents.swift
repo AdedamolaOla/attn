@@ -7,7 +7,23 @@ struct OnboardingGradientBackground: View {
 
     let bottomColor: Color
     let bottomColorLocation: CGFloat
+    var topColorEndLocation: CGFloat? = nil
     var animates: Bool = false
+
+    private var gradientStops: [Gradient.Stop] {
+        let blue = Color(red: 0, green: 159.0 / 255.0, blue: 254.0 / 255.0)
+        var stops: [Gradient.Stop] = [.init(color: blue, location: 0)]
+
+        if let topColorEndLocation {
+            stops.append(.init(color: blue, location: topColorEndLocation))
+        }
+
+        stops.append(.init(color: bottomColor, location: bottomColorLocation))
+        if bottomColorLocation < 1 {
+            stops.append(.init(color: bottomColor, location: 1))
+        }
+        return stops
+    }
 
     var body: some View {
         GeometryReader { proxy in
@@ -17,11 +33,7 @@ struct OnboardingGradientBackground: View {
                 Color.white
 
                 LinearGradient(
-                    stops: [
-                        .init(color: Color(red: 0, green: 159.0 / 255.0, blue: 254.0 / 255.0), location: 0),
-                        .init(color: bottomColor, location: bottomColorLocation),
-                        .init(color: bottomColor, location: 1)
-                    ],
+                    stops: gradientStops,
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -51,8 +63,6 @@ enum OnboardingButtonTone {
         switch self {
         case .primary:
             return [Color(red: 0, green: 137.0 / 255.0, blue: 1), Color(red: 0, green: 120.0 / 255.0, blue: 244 / 255)]
-        case .secondary:
-            return [Color.white.opacity(0.92), Color.white.opacity(0.76)]
         case .destructive:
             return [Color(red: 1, green: 0, blue: 0), Color(red: 1, green: 24.0 / 255.0, blue: 31.0 / 255)]
         }
@@ -61,21 +71,18 @@ enum OnboardingButtonTone {
     var foregroundColor: Color {
         switch self {
         case .primary, .destructive: return .white
-        case .secondary: return Color(red: 27.0 / 255.0, green: 27.0 / 255.0, blue: 27.0 / 255.0)
         }
     }
 
     var borderColor: Color {
         switch self {
         case .primary, .destructive: return .white.opacity(0.28)
-        case .secondary: return .white.opacity(0.82)
         }
     }
 
     var shadowColor: Color {
         switch self {
         case .primary: return Color(red: 0, green: 126.0 / 255.0, blue: 1).opacity(0.20)
-        case .secondary: return Color.black.opacity(0.07)
         case .destructive: return Color.red.opacity(0.15)
         }
     }
@@ -118,6 +125,24 @@ private struct OnboardingPressButtonStyle: ButtonStyle {
     }
 }
 
+
+
+/// Shared destructive Gmail action used on Account and onboarding confirmation.
+struct DisconnectGmailButton: View {
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(title, action: action)
+            .font(.system(size: 17, weight: .semibold))
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 50)
+            .background(.clear)
+            .glassEffect(.regular.tint(.red).interactive(), in: .capsule)
+            .environment(\\.colorScheme, .light)
+    }
+}
 
 /// Shared circular close control used across onboarding screens.
 struct OnboardingCloseButton: View {
