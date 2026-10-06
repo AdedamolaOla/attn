@@ -67,7 +67,7 @@ public struct WelcomeView: View {
                     width: cardWidth,
                     visible: flightVisible,
                     startOffset: CGSize(width: 68, height: -24),
-                    rotation: 4.85,
+                    rotation: 4.85
                 )
                  .position(
                     x: isLandscape ? size.width * 0.68 : size.width * 0.49,
@@ -81,8 +81,7 @@ public struct WelcomeView: View {
                     width: cardWidth,
                     visible: figmaVisible,
                     startOffset: CGSize(width: 28, height: 50),
-                    rotation: -1.97,
-                    isLandscape: isLandscape
+                    rotation: -1.97
                 )
                 .position(
                     x: isLandscape ? size.width * 0.70 : size.width * 0.48,
@@ -96,8 +95,7 @@ public struct WelcomeView: View {
                     width: cardWidth,
                     visible: paymentVisible,
                     startOffset: CGSize(width: -70, height: 24),
-                    rotation: 1.01,
-                    isLandscape: isLandscape
+                    rotation: 1.01
                 )
                 .position(
                     x: isLandscape ? size.width * 0.73 : size.width * 0.51,
@@ -105,7 +103,7 @@ public struct WelcomeView: View {
                 )
                 .zIndex(3)
 
-                welcomeCopy(in: size, isLandscape: isLandscape)
+                welcomeCopy(in: size)
                     .position(
                         x: isLandscape ? size.width * 0.24 : size.width / 2,
                         y: size.height * (isLandscape ? 0.29 : 0.142)
@@ -118,8 +116,7 @@ public struct WelcomeView: View {
                     screenBottom: screenBottom,
                     centerX: footerCenterX
                 )
-                .opacity(connectVisible ? 1 : 0)
-                .zIndex(5)
+                                .zIndex(5)
 
                 // The matching text is already part of the Figma footer export.
                 // This visually hidden label makes it available to VoiceOver.
@@ -191,8 +188,8 @@ public struct WelcomeView: View {
         width: CGFloat,
         visible: Bool,
         startOffset: CGSize,
-        rotation: Double,
-    ) -> some View {
+        rotation: Double
+                ) -> some View {
         WelcomeRaster(resourceName: resourceName, accessibilityLabel: label)
             .frame(width: width, height: width / 2.15)
             .rotationEffect(.degrees(rotation))
@@ -235,6 +232,9 @@ public struct WelcomeView: View {
         guard !hasStartedEntrance else { return }
         hasStartedEntrance = true
         if !reduceMotion {
+            withAnimation(.easeInOut(duration: 11).repeatForever(autoreverses: true)) {
+                gradientDrift = 56
+            }
         }
 
         Task { @MainActor in
