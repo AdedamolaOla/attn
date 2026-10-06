@@ -57,15 +57,13 @@ public struct InboxAnalysisView: View {
     private func analysisOrb(progress: Int, phase: TimeInterval) -> some View {
         GeometryReader { geometry in
             let size = geometry.size
-            let motion = CGFloat(phase)
-
             // The glass bulb stays still. Only its three soft color fields drift.
-            let yellowX = 0.35 + 0.16 * sin(motion * 0.78)
-            let yellowY = 0.36 + 0.12 * cos(motion * 0.64)
-            let blueX = 0.67 + 0.15 * sin(motion * 0.71 + 2.2)
-            let blueY = 0.65 + 0.14 * cos(motion * 0.83 + 1.2)
-            let whiteX = 0.50 + 0.11 * sin(motion * 0.53 + 4.3)
-            let whiteY = 0.49 + 0.10 * cos(motion * 0.62 + 2.8)
+            let yellowX = 0.35 + 0.16 * CGFloat(sin(phase * 0.78))
+            let yellowY = 0.36 + 0.12 * CGFloat(cos(phase * 0.64))
+            let blueX = 0.67 + 0.15 * CGFloat(sin(phase * 0.71 + 2.2))
+            let blueY = 0.65 + 0.14 * CGFloat(cos(phase * 0.83 + 1.2))
+            let whiteX = 0.50 + 0.11 * CGFloat(sin(phase * 0.53 + 4.3))
+            let whiteY = 0.49 + 0.10 * CGFloat(cos(phase * 0.62 + 2.8))
 
             ZStack {
                 Circle()
