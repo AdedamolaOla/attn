@@ -63,6 +63,7 @@ enum OnboardingButtonTone {
 struct OnboardingActionButton: View {
     let title: String
     let tone: OnboardingButtonTone
+    var height: CGFloat = 52
     let action: () -> Void
 
     var body: some View {
@@ -71,7 +72,7 @@ struct OnboardingActionButton: View {
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 52)
+                .frame(height: height)
                 .background {
                     Capsule()
                         .fill(LinearGradient(colors: tone.colors, startPoint: .top, endPoint: .bottom))
