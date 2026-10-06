@@ -13,64 +13,76 @@ public struct PriorityCardShowcase: View {
     public var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: AttnSpacing.section) {
+                LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
                     TimelineView(.periodic(from: .now, by: 60)) { context in
-                        TodayBriefingHeader(
+                        TodayBriefingTitle(
                             date: context.date,
-                            selection: $selection,
                             onProfile: { showingProfile = true }
                         )
                     }
-                    .padding(.bottom, 8)
+                    .padding(.horizontal, AttnSpacing.panel)
+                    .padding(.top, AttnSpacing.content)
+                    .padding(.bottom, AttnSpacing.section)
 
-                    if selection == .immediate {
-                        sample(
-                            id: "payment",
-                            title: "Credit card payment",
-                            timing: "Due today",
-                            sender: "RBC Mastercard",
-                            initials: "RBC",
-                            tone: AttnColors.priorityBlue,
-                            logoColor: Color(red: 19 / 255, green: 94 / 255, blue: 171 / 255)
-                        )
-                        sample(
-                            id: "flight",
-                            title: "Flight check-in",
-                            timing: "Opens in 3 hours",
-                            sender: "Example Air",
-                            initials: "EA",
-                            tone: AttnColors.priorityGreen,
-                            logoColor: Color(red: 0.04, green: 0.32, blue: 0.19)
-                        )
-                        sample(
-                            id: "uncertain",
-                            title: "Possible appointment change",
-                            timing: "Timing unconfirmed",
-                            sender: "Example Clinic",
-                            initials: "EC",
-                            tone: AttnColors.priorityCyan,
-                            logoColor: Color(red: 0.02, green: 0.31, blue: 0.38),
-                            attention: .needsReview
-                        )
-                    } else {
-                        sample(
-                            id: "interview",
-                            title: "Interview",
-                            timing: "Tomorrow · 9:30 AM",
-                            sender: "Example Studio",
-                            initials: "ES",
-                            tone: AttnColors.priorityOrange,
-                            logoColor: Color(red: 0.48, green: 0.19, blue: 0.02),
-                            attention: .upcoming
-                        )
+                    Section {
+                        VStack(alignment: .leading, spacing: AttnSpacing.section) {
+                            if selection == .immediate {
+                                sample(
+                                    id: "payment",
+                                    title: "Credit card payment",
+                                    timing: "Due today",
+                                    sender: "RBC Mastercard",
+                                    initials: "RBC",
+                                    tone: AttnColors.priorityBlue,
+                                    logoColor: Color(red: 19 / 255, green: 94 / 255, blue: 171 / 255)
+                                )
+                                sample(
+                                    id: "flight",
+                                    title: "Flight check-in",
+                                    timing: "Opens in 3 hours",
+                                    sender: "Example Air",
+                                    initials: "EA",
+                                    tone: AttnColors.priorityGreen,
+                                    logoColor: Color(red: 0.04, green: 0.32, blue: 0.19)
+                                )
+                                sample(
+                                    id: "uncertain",
+                                    title: "Possible appointment change",
+                                    timing: "Timing unconfirmed",
+                                    sender: "Example Clinic",
+                                    initials: "EC",
+                                    tone: AttnColors.priorityCyan,
+                                    logoColor: Color(red: 0.02, green: 0.31, blue: 0.38),
+                                    attention: .needsReview
+                                )
+                            } else {
+                                sample(
+                                    id: "interview",
+                                    title: "Interview",
+                                    timing: "Tomorrow · 9:30 AM",
+                                    sender: "Example Studio",
+                                    initials: "ES",
+                                    tone: AttnColors.priorityOrange,
+                                    logoColor: Color(red: 0.48, green: 0.19, blue: 0.02),
+                                    attention: .upcoming
+                                )
+                            }
+
+                            Text("Sample priorities · Gmail is not connected")
+                                .font(AttnTypography.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal, AttnSpacing.panel)
+                        .padding(.top, AttnSpacing.content)
+                        .padding(.bottom, AttnSpacing.content)
+                    } header: {
+                        TodaySectionTabs(selection: $selection)
+                            .padding(.horizontal, AttnSpacing.panel)
+                            .padding(.vertical, AttnSpacing.compact)
+                            .frame(maxWidth: .infinity)
+                            .background(AttnColors.background)
                     }
-
-                    Text("Sample priorities · Gmail is not connected")
-                        .font(AttnTypography.footnote)
-                        .foregroundStyle(.secondary)
                 }
-                .padding(.horizontal, AttnSpacing.panel)
-                .padding(.vertical, AttnSpacing.content)
             }
             .background(AttnColors.background)
             .toolbar(.hidden, for: .navigationBar)
