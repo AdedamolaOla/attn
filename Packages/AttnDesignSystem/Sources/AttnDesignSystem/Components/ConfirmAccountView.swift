@@ -51,7 +51,7 @@ public struct ConfirmAccountView: View {
 
             ZStack {
                 OnboardingGradientBackground(
-                    bottomColor: .white.opacity(0.5),
+                    bottomColor: Color(red: 249.0 / 255.0, green: 251.0 / 255.0, blue: 227.0 / 255.0),
                     bottomColorLocation: 1,
                     topColorEndLocation: 0.1,
                     animates: true
