@@ -58,8 +58,8 @@ public struct InboxAnalysisView: View {
         let yellow = Color(hex: 0xFFD600)
         let blue = Color(hex: 0x009FFE)
         let yellowCenter = UnitPoint(
-            x: 0.5 + 0.18 * sin(phase),
-            y: 0.5 + 0.16 * cos(phase * 0.82)
+            x: 0.5 + 0.18 * CGFloat(sin(phase)),
+            y: 0.5 + 0.16 * CGFloat(cos(phase * 0.82))
         )
 
         return Circle()
