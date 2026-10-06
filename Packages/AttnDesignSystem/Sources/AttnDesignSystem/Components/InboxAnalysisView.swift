@@ -34,12 +34,13 @@ public struct InboxAnalysisView: View {
                 VStack(spacing: 16) {
                     analysisOrb(progress: progress, phase: phase)
 
-                    Text("Analyzing your inbox & finding the few messages that deserve your attention.")
+                    Text("Analyzing your inbox & finding the few\nmessages that deserve your attn.")
                         .font(.system(size: 14, weight: .medium, design: .default))
                         .foregroundStyle(Color(hex: 0x77767E))
                         .multilineTextAlignment(.center)
                         .lineSpacing(2)
-                        .frame(width: 249)
+                        .frame(width: 280)
+                        .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
