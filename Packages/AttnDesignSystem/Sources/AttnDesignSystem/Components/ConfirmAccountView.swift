@@ -52,7 +52,8 @@ public struct ConfirmAccountView: View {
             ZStack {
                 OnboardingGradientBackground(
                     bottomColor: .white.opacity(0.5),
-                    bottomColorLocation: 0.5,
+                    bottomColorLocation: 1,
+                    topColorEndLocation: 0.65,
                     animates: true
                 )
 
@@ -204,7 +205,7 @@ public struct ConfirmAccountView: View {
             OnboardingActionButton(title: "Confirm email", tone: .primary) {
                 confirmAccount()
             }
-            OnboardingActionButton(title: "Disconnect", tone: .secondary, height: 50, action: onDisconnect)
+            DisconnectGmailButton(title: "Disconnect", action: onDisconnect)
         }
         .frame(width: width)
         .accessibilityElement(children: .contain)
