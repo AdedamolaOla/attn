@@ -211,7 +211,7 @@ public struct ConfirmAccountView: View {
             OnboardingActionButton(title: "Confirm email", tone: .primary) {
                 confirmAccount()
             }
-            OnboardingActionButton(title: "Disconnect", tone: .destructive, action: onDisconnect)
+            OnboardingActionButton(title: "Disconnect", tone: .destructive, height: 50, action: onDisconnect)
         }
         .frame(width: width)
         .accessibilityElement(children: .contain)
@@ -226,6 +226,7 @@ public struct ConfirmAccountView: View {
                 .glassEffect(.regular.interactive(), in: .circle)
         }
         .buttonStyle(.plain)
+        .environment(\.colorScheme, .light)
         .accessibilityLabel("Cancel account confirmation")
         .accessibilityHint("Returns to connect your mail.")
     }
