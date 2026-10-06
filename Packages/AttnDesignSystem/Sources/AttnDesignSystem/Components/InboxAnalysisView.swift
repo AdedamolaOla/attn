@@ -26,7 +26,7 @@ public struct InboxAnalysisView: View {
             )
             .ignoresSafeArea()
 
-            TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { timeline in
+            TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
                 let elapsed = max(0, timeline.date.timeIntervalSince(startDate))
                 let progress = min(100, 1 + Int((elapsed / analysisDuration) * 99))
                 let phase = reduceMotion ? 0 : elapsed * (2 * .pi / 8.5)
@@ -55,9 +55,12 @@ public struct InboxAnalysisView: View {
     }
 
     private func analysisOrb(progress: Int, phase: TimeInterval) -> some View {
-        let driftX = CGFloat(sin(phase * 0.72)) * 0.035
-        let driftY = CGFloat(cos(phase * 0.58)) * 0.035
-        let whiteStop = 0.50 + CGFloat(sin(phase * 0.43)) * 0.035
+        // Rotate the gradient axis around the orb so the colors sweep
+        // visibly through it instead of shifting by only a few points.
+        let angle = phase * 0.72
+        let axisX = CGFloat(cos(angle)) * 0.48
+        let axisY = CGFloat(sin(angle)) * 0.48
+        let whiteStop = 0.50 + CGFloat(sin(phase * 0.43)) * 0.06
 
         return Circle()
             .fill(
@@ -67,8 +70,8 @@ public struct InboxAnalysisView: View {
                         .init(color: Color(hex: 0xFFFFFF), location: whiteStop),
                         .init(color: Color(hex: 0x009FFE), location: 1)
                     ],
-                    startPoint: UnitPoint(x: 0.05 + driftX, y: 0.05 + driftY),
-                    endPoint: UnitPoint(x: 0.95 + driftX, y: 0.95 + driftY)
+                    startPoint: UnitPoint(x: 0.5 - axisX, y: 0.5 - axisY),
+                    endPoint: UnitPoint(x: 0.5 + axisX, y: 0.5 + axisY)
                 )
             )
             // Keep the shadow on the orb's inner edge and clip it to the ellipse.
