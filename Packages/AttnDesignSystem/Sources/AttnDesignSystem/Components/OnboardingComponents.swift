@@ -67,6 +67,23 @@ enum OnboardingButtonTone {
         }
     }
 
+    var edgeColors: [Color] {
+        switch self {
+        case .primary:
+            return [
+                Color(red: 70.0 / 255.0, green: 195.0 / 255.0, blue: 252.0 / 255.0),
+                Color(red: 4.0 / 255.0, green: 119.0 / 255.0, blue: 232.0 / 255.0),
+                Color(red: 70.0 / 255.0, green: 195.0 / 255.0, blue: 252.0 / 255.0)
+            ]
+        case .destructive:
+            return [
+                Color(red: 1, green: 145.0 / 255.0, blue: 140.0 / 255.0),
+                Color(red: 224.0 / 255.0, green: 32.0 / 255.0, blue: 32.0 / 255.0),
+                Color(red: 1, green: 145.0 / 255.0, blue: 140.0 / 255.0)
+            ]
+        }
+    }
+
     var foregroundColor: Color {
         .white
     }
@@ -88,6 +105,37 @@ struct OnboardingActionButton: View {
                 .frame(height: height)
                 .background(.clear)
                 .glassEffect(.regular.tint(tone.glassTint).interactive(), in: .capsule)
+                .overlay {
+                    Capsule()
+                        .stroke(
+                            LinearGradient(
+                                colors: tone.edgeColors,
+                                startPoint: .top,
+                                endPoint: .bottom
+                            ),
+                            lineWidth: 1
+                        )
+                        .allowsHitTesting(false)
+                }
+                .overlay {
+                    Capsule()
+                        .inset(by: 1)
+                        .stroke(
+                            LinearGradient(
+                                stops: [
+                                    .init(color: .white.opacity(0.58), location: 0),
+                                    .init(color: .white.opacity(0.10), location: 0.18),
+                                    .init(color: .clear, location: 0.5),
+                                    .init(color: .white.opacity(0.10), location: 0.82),
+                                    .init(color: .white.opacity(0.48), location: 1)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            ),
+                            lineWidth: 0.8
+                        )
+                        .allowsHitTesting(false)
+                }
                 .contentShape(Capsule())
         }
         .buttonStyle(OnboardingPressButtonStyle())
