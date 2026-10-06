@@ -57,7 +57,7 @@ public struct WelcomeView: View {
                     .frame(width: footerWidth, height: footerVisibleHeight, alignment: .top)
                     .clipped()
                     .opacity(cloudVisible ? 1 : 0)
-                    .position(x: footerCenterX, y: footerCenterY)
+                   .position(x: footerCenterX, y: footerCenterY)
                     .accessibilityHidden(true)
                     .zIndex(0)
 
@@ -103,7 +103,7 @@ public struct WelcomeView: View {
                 )
                 .zIndex(3)
 
-                welcomeCopy(in: size)
+                welcomeCopy(in: size, isLandscape: isLandscape)
                     .position(
                         x: isLandscape ? size.width * 0.24 : size.width / 2,
                         y: size.height * (isLandscape ? 0.29 : 0.142)
@@ -116,7 +116,7 @@ public struct WelcomeView: View {
                     screenBottom: screenBottom,
                     centerX: footerCenterX
                 )
-                                .zIndex(5)
+                    .zIndex(5)
 
                 // The matching text is already part of the Figma footer export.
                 // This visually hidden label makes it available to VoiceOver.
@@ -189,7 +189,7 @@ public struct WelcomeView: View {
         visible: Bool,
         startOffset: CGSize,
         rotation: Double
-                ) -> some View {
+    ) -> some View {
         WelcomeRaster(resourceName: resourceName, accessibilityLabel: label)
             .frame(width: width, height: width / 2.15)
             .rotationEffect(.degrees(rotation))
