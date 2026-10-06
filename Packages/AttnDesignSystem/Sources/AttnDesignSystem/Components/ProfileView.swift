@@ -122,13 +122,10 @@ public struct ProfileView: View {
 
     private var disconnectArea: some View {
         VStack(spacing: 16) {
-            Button("Disconnect Gmail") { confirmDisconnect = true }
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity).frame(height: 50)
-                .background(.clear)
-                .glassEffect(.regular.tint(.red).interactive(), in: .capsule)
-                .padding(.horizontal, AttnSpacing.panel)
+            DisconnectGmailButton(title: "Disconnect Gmail") {
+                confirmDisconnect = true
+            }
+            .padding(.horizontal, AttnSpacing.panel)
             Text("attn will stop syncing this inbox and remove\nits locally derived priorities.")
                 .font(.system(size: 12)).foregroundStyle(Color(red: 119/255, green: 118/255, blue: 126/255))
                 .multilineTextAlignment(.center).padding(.bottom, AttnSpacing.section)
