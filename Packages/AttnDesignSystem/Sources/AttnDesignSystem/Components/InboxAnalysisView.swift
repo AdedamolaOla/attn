@@ -26,10 +26,10 @@ public struct InboxAnalysisView: View {
             )
             .ignoresSafeArea()
 
-            TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { timeline in
+            TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
                 let elapsed = max(0, timeline.date.timeIntervalSince(startDate))
                 let progress = min(100, 1 + Int((elapsed / analysisDuration) * 99))
-                let phase = reduceMotion ? 0 : elapsed * (2 * .pi / 8.5)
+                let phase = reduceMotion ? 0 : elapsed * (2 * .pi / 7.5)
 
                 VStack(spacing: 16) {
                     analysisOrb(progress: progress, phase: phase)
@@ -55,22 +55,30 @@ public struct InboxAnalysisView: View {
     }
 
     private func analysisOrb(progress: Int, phase: TimeInterval) -> some View {
-        let driftX = CGFloat(sin(phase * 0.72)) * 0.035
-        let driftY = CGFloat(cos(phase * 0.58)) * 0.035
-        let whiteStop = 0.50 + CGFloat(sin(phase * 0.43)) * 0.035
+        let yellow = Color(hex: 0xFFD600)
+        let blue = Color(hex: 0x009FFE)
+        let yellowCenter = UnitPoint(
+            x: 0.5 + 0.18 * sin(phase),
+            y: 0.5 + 0.16 * cos(phase * 0.82)
+        )
 
         return Circle()
-            .fill(
-                LinearGradient(
+            .fill(blue)
+            .overlay {
+                // A saturated yellow field drifts over the blue base to create
+                // a calm, continuous loading motion without a white wash.
+                RadialGradient(
                     stops: [
-                        .init(color: Color(hex: 0xFFD600), location: 0),
-                        .init(color: Color(hex: 0xFFFFFF), location: whiteStop),
-                        .init(color: Color(hex: 0x009FFE), location: 1)
+                        .init(color: yellow, location: 0),
+                        .init(color: yellow, location: 0.34),
+                        .init(color: yellow.opacity(0.88), location: 0.53),
+                        .init(color: yellow.opacity(0), location: 1)
                     ],
-                    startPoint: UnitPoint(x: 0.05 + driftX, y: 0.05 + driftY),
-                    endPoint: UnitPoint(x: 0.95 + driftX, y: 0.95 + driftY)
+                    center: yellowCenter,
+                    startRadius: 0,
+                    endRadius: 170
                 )
-            )
+            }
             // Keep the shadow on the orb's inner edge and clip it to the ellipse.
             .overlay {
                 Circle()
