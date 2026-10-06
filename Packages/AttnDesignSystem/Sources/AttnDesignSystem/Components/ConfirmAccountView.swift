@@ -51,8 +51,9 @@ public struct ConfirmAccountView: View {
 
             ZStack {
                 OnboardingGradientBackground(
-                    bottomColor: .white,
-                    bottomColorLocation: 0.698
+                    bottomColor: .white.opacity(0.5),
+                    bottomColorLocation: 0.5,
+                    animates: true
                 )
 
                 confirmationCopy(width: size.width)
@@ -161,21 +162,12 @@ public struct ConfirmAccountView: View {
     private var avatarPlaceholder: some View {
         Circle()
             .fill(
-                LinearGradient(
-                    colors: [
-                        Color(red: 47.0 / 255.0, green: 40.0 / 255.0, blue: 142.0 / 255.0),
-                        Color(red: 132.0 / 255.0, green: 31.0 / 255.0, blue: 170.0 / 255.0),
-                        Color(red: 17.0 / 255.0, green: 133.0 / 255.0, blue: 225.0 / 255.0)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
+                Color(red: 26.0 / 255.0, green: 115.0 / 255.0, blue: 232.0 / 255.0)
             )
             .overlay {
-                Image(systemName: "person.fill")
-                    .font(.system(size: 74, weight: .regular))
-                    .foregroundStyle(.white.opacity(0.92))
-                    .offset(y: 10)
+                Text(identity.name.first.map { String($0).uppercased() } ?? "L")
+                    .font(.system(size: 78, weight: .medium, design: .default))
+                    .foregroundStyle(.white)
                     .accessibilityHidden(true)
             }
             .overlay {
@@ -212,23 +204,17 @@ public struct ConfirmAccountView: View {
             OnboardingActionButton(title: "Confirm email", tone: .primary) {
                 confirmAccount()
             }
-            OnboardingActionButton(title: "Disconnect", tone: .destructive, height: 50, action: onDisconnect)
+            OnboardingActionButton(title: "Disconnect", tone: .secondary, height: 50, action: onDisconnect)
         }
         .frame(width: width)
         .accessibilityElement(children: .contain)
     }
 
     private var closeButton: some View {
-        Button(action: onCancel) {
-            Image(systemName: "xmark")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color(red: 27.0 / 255.0, green: 27.0 / 255.0, blue: 27.0 / 255.0).opacity(0.82))
-                .frame(width: 50, height: 50)
-                .glassEffect(.regular.interactive(), in: .circle)
-        }
-        .buttonStyle(.plain)
-        .environment(\.colorScheme, .light)
-        .accessibilityLabel("Cancel account confirmation")
+        OnboardingCloseButton(
+            accessibilityLabel: "Cancel account confirmation",
+            action: onCancel
+        )
         .accessibilityHint("Returns to connect your mail.")
     }
 
