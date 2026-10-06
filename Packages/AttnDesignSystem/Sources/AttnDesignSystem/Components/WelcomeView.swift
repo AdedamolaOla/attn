@@ -121,18 +121,7 @@ public struct WelcomeView: View {
                 )
                     .zIndex(5)
 
-                // The matching text is already part of the Figma footer export.
-                // This visually hidden label makes it available to VoiceOver.
-                Text("Read-only access. Disconnect anytime.")
-                    .font(.system(size: 12, weight: .medium))
-                    .accessibilitySortPriority(1.1)
-                    .opacity(privacyVisible ? 0.001 : 0)
-                    .allowsHitTesting(false)
-                    .position(
-                        x: footerCenterX,
-                        y: screenBottom - footerHeight * (34.0 / 461.0)
-                    )
-                    .zIndex(6)
+
             }
             .frame(width: size.width, height: size.height)
             .onAppear(perform: startEntrance)
@@ -196,23 +185,34 @@ public struct WelcomeView: View {
         screenBottom: CGFloat,
         centerX: CGFloat
     ) -> some View {
-        Button {
-            AttnHaptics.impactLight()
-            onConnectMail()
-        } label: {
-            Rectangle()
-                .fill(Color.clear)
-                .contentShape(Rectangle())
-                .frame(width: width * (358.0 / 402.0), height: footerHeight * (53.0 / 461.0))
+        let footerPanelHeight = footerHeight * (141.0 / 461.0)
+        let buttonWidth = width * (357.0 / 402.0)
+        let buttonHeight = footerHeight * (53.0 / 461.0)
+
+        return ZStack {
+            Color.white
+                .frame(width: width, height: footerPanelHeight)
+                .position(x: centerX, y: screenBottom - footerPanelHeight / 2)
+
+            OnboardingActionButton(title: "Connect your mail", tone: .primary, height: buttonHeight) {
+                AttnHaptics.impactLight()
+                onConnectMail()
+            }
+            .frame(width: buttonWidth, height: buttonHeight)
+            .accessibilityHint("Connect Gmail with read-only access.")
+            .accessibilitySortPriority(1.2)
+            .position(x: centerX, y: screenBottom - footerHeight * (82.0 / 461.0))
+
+            Text("Read-only access. Disconnect anytime.")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Color(red: 156.0 / 255.0, green: 156.0 / 255.0, blue: 166.0 / 255.0))
+                .opacity(privacyVisible ? 1 : 0)
+                .allowsHitTesting(false)
+                .accessibilitySortPriority(1.1)
+                .position(x: centerX, y: screenBottom - footerHeight * (34.0 / 461.0))
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Connect your mail")
-        .accessibilityHint("Connect Gmail with read-only access.")
-        .accessibilitySortPriority(1.2)
-        .position(
-            x: centerX,
-            y: screenBottom - footerHeight * (82.0 / 461.0)
-        )
+        .frame(width: width, height: screenBottom)
+        .accessibilityElement(children: .contain)
     }
 
     private func startEntrance() {
