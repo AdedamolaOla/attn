@@ -1,17 +1,50 @@
 import SwiftUI
 import AttnDesignSystem
 
+private enum OnboardingRoute {
+    case welcome
+    case confirmAccount
+    case analysis
+}
+
 struct ContentView: View {
-    @State private var showingGmailNextStep = false
+    @State private var route: OnboardingRoute = .welcome
 
     var body: some View {
-        WelcomeView {
-            showingGmailNextStep = true
+        Group {
+            switch route {
+            case .welcome:
+                WelcomeView {
+                    move(to: .confirmAccount)
+                }
+                .transition(.opacity)
+
+            case .confirmAccount:
+                ConfirmAccountView(
+                    identity: .prototype,
+                    onConfirm: {
+                        move(to: .analysis)
+                    },
+                    onDisconnect: {
+                        move(to: .welcome)
+                    },
+                    onCancel: {
+                        move(to: .welcome)
+                    }
+                )
+                .transition(.opacity)
+
+            case .analysis:
+                PostConnectionAnalysisFlow()
+                    .transition(.opacity)
+            }
         }
-        .alert("Connect Gmail", isPresented: $showingGmailNextStep) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Gmail authorization is the next onboarding step. No account has been connected yet.")
+        .animation(.easeInOut(duration: 0.22), value: route)
+    }
+
+    private func move(to nextRoute: OnboardingRoute) {
+        withAnimation(.easeInOut(duration: 0.22)) {
+            route = nextRoute
         }
     }
 }
