@@ -56,7 +56,6 @@ struct OnboardingGradientBackground: View {
 
 enum OnboardingButtonTone {
     case primary
-    case secondary
     case destructive
 
     var colors: [Color] {
@@ -88,7 +87,7 @@ enum OnboardingButtonTone {
     }
 }
 
-/// Shared capsule button used for onboarding primary and secondary actions.
+/// Shared capsule button used for onboarding actions.
 struct OnboardingActionButton: View {
     let title: String
     let tone: OnboardingButtonTone
