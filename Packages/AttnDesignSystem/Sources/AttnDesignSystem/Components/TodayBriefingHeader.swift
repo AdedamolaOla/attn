@@ -6,25 +6,14 @@ public enum TodaySection: String, CaseIterable, Identifiable, Sendable {
     public var id: Self { self }
 }
 
-/// Home chrome from Figma 108:3829. Latest designer specifications
-/// override the earlier large navigation title and system segmented Picker.
-public struct TodayBriefingHeader: View {
+/// The title, date, and profile control. Designed to scroll with the home content.
+public struct TodayBriefingTitle: View {
     private let date: Date
     private let onProfile: () -> Void
-    @Binding private var selection: TodaySection
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.dynamicTypeSize) private var typeSize
     @ScaledMetric(relativeTo: .subheadline) private var dateSize = 14
-    @ScaledMetric(relativeTo: .callout) private var tabHeight = 56
-    @Namespace private var indicator
 
-    public init(
-        date: Date = .now,
-        selection: Binding<TodaySection>,
-        onProfile: @escaping () -> Void
-    ) {
+    public init(date: Date = .now, onProfile: @escaping () -> Void) {
         self.date = date
-        self._selection = selection
         self.onProfile = onProfile
     }
 
@@ -37,85 +26,119 @@ public struct TodayBriefingHeader: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 32) {
-            HStack(spacing: AttnSpacing.content) {
-                // Fixed 8pt title-to-date gap from the design.
-                VStack(alignment: .leading, spacing: AttnSpacing.compact) {
-                    Text("Needs attn.")
-                        .font(.title.bold())
-                        .foregroundStyle(Color(red: 28 / 255, green: 28 / 255, blue: 30 / 255))
-                        .accessibilityAddTraits(.isHeader)
-                    Text(dateLabel)
-                        .font(.system(size: dateSize, weight: .medium))
-                        .foregroundStyle(Color(red: 183 / 255, green: 183 / 255, blue: 183 / 255))
-                }
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        HStack(spacing: AttnSpacing.content) {
+            VStack(alignment: .leading, spacing: AttnSpacing.compact) {
+                Text("Needs attn.")
+                    .font(.title.bold())
+                    .foregroundStyle(Color(red: 28 / 255, green: 28 / 255, blue: 30 / 255))
+                    .accessibilityAddTraits(.isHeader)
+                Text(dateLabel)
+                    .font(.system(size: dateSize, weight: .medium))
+                    .foregroundStyle(Color(red: 183 / 255, green: 183 / 255, blue: 183 / 255))
+            }
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-                Button(action: onProfile) {
-                    Image(systemName: "person.fill")
-                        .font(.system(size: 19))
-                        .foregroundStyle(AttnColors.surfacePriority)
-                        .frame(width: 50, height: 50)
+            Button(action: onProfile) {
+                Image(systemName: "person.fill")
+                    .font(.system(size: 19))
+                    .foregroundStyle(AttnColors.surfacePriority)
+                    .frame(width: 50, height: 50)
+            }
+            .buttonStyle(.plain)
+            .glassEffect(.regular.interactive(), in: .circle)
+            .overlay {
+                Circle()
+                    .strokeBorder(
+                        LinearGradient(
+                            stops: [
+                                .init(color: .white.opacity(0.65), location: 0),
+                                .init(color: .black.opacity(0.20), location: 0.35),
+                                .init(color: .black.opacity(0.16), location: 0.65),
+                                .init(color: .white.opacity(0.55), location: 1)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+            }
+            .accessibilityLabel("Profile")
+        }
+    }
+}
+
+/// The Immediate / Upcoming control. Can be pinned independently of the title.
+public struct TodaySectionTabs: View {
+    @Binding private var selection: TodaySection
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ScaledMetric(relativeTo: .callout) private var tabHeight = 56
+    @Namespace private var indicator
+
+    public init(selection: Binding<TodaySection>) {
+        self._selection = selection
+    }
+
+    public var body: some View {
+        HStack(spacing: 0) {
+            ForEach(TodaySection.allCases) { section in
+                Button {
+                    withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) {
+                        selection = section
+                    }
+                } label: {
+                    Text(section.rawValue)
+                        .font(.callout.weight(selection == section ? .bold : .medium))
+                        .foregroundStyle(selection == section
+                            ? Color(red: 0, green: 122 / 255, blue: 1)
+                            : Color(red: 142 / 255, green: 142 / 255, blue: 147 / 255))
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: max(56, tabHeight))
+                        .background {
+                            if selection == section {
+                                Capsule()
+                                    .fill(.white)
+                                    .shadow(color: .black.opacity(0.08), radius: 16, x: 1, y: 2)
+                                    .padding(.vertical, 8)
+                                    .matchedGeometryEffect(id: "selection", in: indicator)
+                            }
+                        }
+                        .contentShape(.rect)
                 }
                 .buttonStyle(.plain)
-                .glassEffect(.regular.interactive(), in: .circle)
-                .overlay {
-                    // A fine refractive rim keeps pale glass legible on white.
-                    Circle()
-                        .strokeBorder(
-                            LinearGradient(
-                                stops: [
-                                    .init(color: .white.opacity(0.65), location: 0),
-                                    .init(color: .black.opacity(0.20), location: 0.35),
-                                    .init(color: .black.opacity(0.16), location: 0.65),
-                                    .init(color: .white.opacity(0.55), location: 1)
-                                ],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            ),
-                            lineWidth: 0.5
-                        )
-                        .allowsHitTesting(false)
-                        .accessibilityHidden(true)
-                }
-                .accessibilityLabel("Profile")
+                .accessibilityAddTraits(selection == section ? [.isSelected] : [])
             }
+        }
+        .padding(.horizontal, 4)
+        .background(Color(red: 252 / 255, green: 252 / 255, blue: 252 / 255), in: .capsule)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Attention horizon")
+    }
+}
 
-            HStack(spacing: 0) {
-                ForEach(TodaySection.allCases) { section in
-                    Button {
-                        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) {
-                            selection = section
-                        }
-                    } label: {
-                        Text(section.rawValue)
-                            .font(.callout.weight(selection == section ? .bold : .medium))
-                            .foregroundStyle(selection == section
-                                ? Color(red: 0, green: 122 / 255, blue: 1)
-                                : Color(red: 142 / 255, green: 142 / 255, blue: 147 / 255))
-                            .fixedSize(horizontal: false, vertical: true)
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: max(56, tabHeight))
-                            .background {
-                                if selection == section {
-                                    Capsule()
-                                        .fill(.white)
-                                        .shadow(color: .black.opacity(0.08), radius: 16, x: 1, y: 2)
-                                        .padding(.vertical, 8)
-                                        .matchedGeometryEffect(id: "selection", in: indicator)
-                                }
-                            }
-                            .contentShape(.rect)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityAddTraits(selection == section ? [.isSelected] : [])
-                }
-            }
-            .padding(.horizontal, 4)
-            .background(Color(red: 252 / 255, green: 252 / 255, blue: 252 / 255), in: .capsule)
-            .accessibilityElement(children: .contain)
-            .accessibilityLabel("Attention horizon")
+/// Combined home header for screens that don't need independently pinned tabs.
+public struct TodayBriefingHeader: View {
+    private let date: Date
+    private let onProfile: () -> Void
+    @Binding private var selection: TodaySection
+
+    public init(
+        date: Date = .now,
+        selection: Binding<TodaySection>,
+        onProfile: @escaping () -> Void
+    ) {
+        self.date = date
+        self._selection = selection
+        self.onProfile = onProfile
+    }
+
+    public var body: some View {
+        VStack(alignment: .leading, spacing: 32) {
+            TodayBriefingTitle(date: date, onProfile: onProfile)
+            TodaySectionTabs(selection: $selection)
         }
     }
 }
