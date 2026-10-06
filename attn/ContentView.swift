@@ -1,7 +1,7 @@
 import SwiftUI
 import AttnDesignSystem
 
-private enum OnboardingRoute {
+private enum OnboardingRoute: Equatable {
     case welcome
     case confirmAccount
     case analysis
