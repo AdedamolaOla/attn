@@ -133,7 +133,7 @@ struct OnboardingCloseButton: View {
                 .glassEffect(.regular.interactive(), in: .circle)
         }
         .buttonStyle(.plain)
-        .environment(\\.colorScheme, .light)
+        .environment(\.colorScheme, .light)
         .accessibilityLabel(accessibilityLabel)
     }
 }
