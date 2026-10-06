@@ -18,7 +18,6 @@ public struct WelcomeView: View {
     @State private var headlineVisible = false
     @State private var bodyVisible = false
     @State private var privacyVisible = false
-    @State private var connectVisible = false
     @State private var hasStartedEntrance = false
     @State private var gradientDrift: CGFloat = 0
 
@@ -30,8 +29,7 @@ public struct WelcomeView: View {
         GeometryReader { proxy in
             let size = proxy.size
             let isLandscape = size.width > size.height
-            let bottomInset = proxy.safeAreaInsets.bottom
-            let screenBottom = size.height + bottomInset
+            let screenBottom = size.height
 
             let footerWidth = min(
                 isLandscape ? size.width * 0.39 : size.width,
@@ -70,11 +68,10 @@ public struct WelcomeView: View {
                     visible: flightVisible,
                     startOffset: CGSize(width: 68, height: -24),
                     rotation: 4.85,
-                    isLandscape: isLandscape
                 )
-                .position(
+                 .position(
                     x: isLandscape ? size.width * 0.68 : size.width * 0.49,
-                    y: size.height * (isLandscape ? 0.25 : 0.37)
+                    y: size.height * (isLandscape ? 0.25 : 0.353)
                 )
                 .zIndex(1)
 
@@ -89,7 +86,7 @@ public struct WelcomeView: View {
                 )
                 .position(
                     x: isLandscape ? size.width * 0.70 : size.width * 0.48,
-                    y: size.height * (isLandscape ? 0.75 : 0.63)
+                    y: size.height * (isLandscape ? 0.75 : 0.600)
                 )
                 .zIndex(2)
 
@@ -104,7 +101,7 @@ public struct WelcomeView: View {
                 )
                 .position(
                     x: isLandscape ? size.width * 0.73 : size.width * 0.51,
-                    y: size.height * (isLandscape ? 0.50 : 0.49)
+                    y: size.height * (isLandscape ? 0.50 : 0.465)
                 )
                 .zIndex(3)
 
@@ -129,7 +126,7 @@ public struct WelcomeView: View {
                 Text("Read-only access. Disconnect anytime.")
                     .font(.system(size: 12, weight: .medium))
                     .accessibilitySortPriority(1.1)
-                    .opacity(0.001)
+                    .opacity(privacyVisible ? 0.001 : 0)
                     .allowsHitTesting(false)
                     .position(
                         x: footerCenterX,
@@ -195,7 +192,6 @@ public struct WelcomeView: View {
         visible: Bool,
         startOffset: CGSize,
         rotation: Double,
-        isLandscape: Bool
     ) -> some View {
         WelcomeRaster(resourceName: resourceName, accessibilityLabel: label)
             .frame(width: width, height: width / 2.15)
@@ -208,7 +204,6 @@ public struct WelcomeView: View {
                     resourceName == "WelcomePayment" ? 2.8 : 2.7
             )
             .accessibilityHidden(false)
-            .shadow(color: .black.opacity(0.015), radius: 1, y: 1)
     }
 
     private func connectButton(
@@ -239,6 +234,8 @@ public struct WelcomeView: View {
     private func startEntrance() {
         guard !hasStartedEntrance else { return }
         hasStartedEntrance = true
+        if !reduceMotion {
+        }
 
         Task { @MainActor in
             if reduceMotion {
@@ -259,10 +256,6 @@ public struct WelcomeView: View {
                 try? await Task.sleep(for: .milliseconds(50))
                 withAnimation(.easeOut(duration: 0.22)) {
                     privacyVisible = true
-                }
-                try? await Task.sleep(for: .milliseconds(75))
-                withAnimation(.easeOut(duration: 0.22)) {
-                    connectVisible = true
                 }
                 return
             }
@@ -292,14 +285,6 @@ public struct WelcomeView: View {
             try? await Task.sleep(for: .milliseconds(50))
             withAnimation(.easeOut(duration: 0.22)) {
                 privacyVisible = true
-            }
-            try? await Task.sleep(for: .milliseconds(80))
-            withAnimation(.easeOut(duration: 0.28)) {
-                connectVisible = true
-            }
-
-            withAnimation(.easeInOut(duration: 11).repeatForever(autoreverses: true)) {
-                gradientDrift = 56
             }
         }
     }
