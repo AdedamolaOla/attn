@@ -95,15 +95,10 @@ public struct InboxAnalysisView: View {
     }
 
     private var closeButton: some View {
-        Button(action: onContinue) {
-            Image(systemName: "xmark")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color(hex: 0x1B1B1B).opacity(0.78))
-                .frame(width: 50, height: 50)
-                .glassEffect(.regular.interactive(), in: .circle)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Continue to Today")
+        OnboardingCloseButton(
+            accessibilityLabel: "Continue to Today",
+            action: onContinue
+        )
     }
 }
 
