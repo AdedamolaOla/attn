@@ -8,8 +8,8 @@ public struct WelcomeView: View {
     private let onConnectMail: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @ScaledMetric(relativeTo: .largeTitle) private var headlineSize: CGFloat = 32
-    @ScaledMetric(relativeTo: .body) private var bodySize: CGFloat = 14
+    @ScaledMetric(relativeTo: .largeTitle) private var headlineSize: CGFloat = 28
+    @ScaledMetric(relativeTo: .body) private var bodySize: CGFloat = 13
 
     @State private var flightVisible = false
     @State private var paymentVisible = false
@@ -71,7 +71,7 @@ public struct WelcomeView: View {
                 )
                  .position(
                     x: isLandscape ? size.width * 0.68 : size.width * 0.49,
-                    y: size.height * (isLandscape ? 0.25 : 0.353)
+                    y: size.height * (isLandscape ? 0.25 : 0.38)
                 )
                 .zIndex(1)
 
@@ -85,7 +85,7 @@ public struct WelcomeView: View {
                 )
                 .position(
                     x: isLandscape ? size.width * 0.70 : size.width * 0.48,
-                    y: size.height * (isLandscape ? 0.75 : 0.600)
+                    y: size.height * (isLandscape ? 0.75 : 0.61)
                 )
                 .zIndex(2)
 
@@ -99,14 +99,14 @@ public struct WelcomeView: View {
                 )
                 .position(
                     x: isLandscape ? size.width * 0.73 : size.width * 0.51,
-                    y: size.height * (isLandscape ? 0.50 : 0.465)
+                    y: size.height * (isLandscape ? 0.50 : 0.49)
                 )
                 .zIndex(3)
 
                 welcomeCopy(in: size, isLandscape: isLandscape)
                     .position(
                         x: isLandscape ? size.width * 0.24 : size.width / 2,
-                        y: size.height * (isLandscape ? 0.29 : 0.142)
+                        y: size.height * (isLandscape ? 0.29 : 0.189)
                     )
                     .zIndex(4)
 
@@ -134,8 +134,8 @@ public struct WelcomeView: View {
             .frame(width: size.width, height: size.height)
             .onAppear(perform: startEntrance)
         }
-        .ignoresSafeArea(edges: .bottom)
-        .preferredColorScheme(.light)
+        .ignoresSafeArea()
+        .preferredColorScheme(.dark)
         .tint(Color(hex: 0x087FF5))
     }
 
@@ -156,10 +156,10 @@ public struct WelcomeView: View {
     }
 
     private func welcomeCopy(in size: CGSize, isLandscape: Bool) -> some View {
-        VStack(spacing: 13) {
+        VStack(spacing: 9) {
             Text("Know what deserves\nyour attention.")
                 .font(.system(size: headlineSize, weight: .bold, design: .default))
-                .foregroundStyle(Color(hex: 0x19191B))
+                .foregroundStyle(Color.white)
                 .multilineTextAlignment(.center)
                 .lineSpacing(0)
                 .fixedSize(horizontal: false, vertical: true)
@@ -169,17 +169,17 @@ public struct WelcomeView: View {
 
             Text("attn quietly finds important emails before they become problems.")
                 .font(.system(size: bodySize, weight: .medium, design: .default))
-                .foregroundStyle(Color(hex: 0x51515A))
+                .foregroundStyle(Color.white)
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: isLandscape ? 320 : 340)
+                .frame(maxWidth: isLandscape ? 320 : 263)
                 .opacity(bodyVisible ? 1 : 0)
                 .offset(y: bodyVisible || reduceMotion ? 0 : 6)
                 .accessibilitySortPriority(3)
         }
-        .frame(width: isLandscape ? min(size.width * 0.43, 360) : min(size.width - 40, 360))
-        .frame(height: isLandscape ? 138 : 144)
+        .frame(width: isLandscape ? min(size.width * 0.43, 360) : min(size.width - 40, 309))
+        .frame(height: isLandscape ? 138 : 120)
     }
 
     private func cardArtwork(
