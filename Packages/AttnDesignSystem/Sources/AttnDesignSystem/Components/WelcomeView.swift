@@ -51,9 +51,9 @@ public struct WelcomeView: View {
                     animates: true
                 )
 
-                // The export is cropped to its cloud/footer portion. Its original
-                // shapes and button artwork remain intact; only the gradient above
-                // the clouds comes from the animated background layer.
+                // Keep the supplied cloud artwork. The footer CTA and privacy
+                // caption are covered by the white panel below and rendered as live,
+                // shared SwiftUI controls so they match the rest of onboarding.
                 WelcomeRaster(resourceName: "WelcomeCloudAndFooter")
                     .frame(width: footerWidth, height: footerHeight)
                     .offset(y: -footerCropTop)
@@ -120,8 +120,6 @@ public struct WelcomeView: View {
                     centerX: footerCenterX
                 )
                     .zIndex(5)
-
-
             }
             .frame(width: size.width, height: size.height)
             .onAppear(perform: startEntrance)
