@@ -58,32 +58,17 @@ enum OnboardingButtonTone {
     case primary
     case destructive
 
-    var colors: [Color] {
+    var glassTint: Color {
         switch self {
         case .primary:
-            return [Color(red: 0, green: 137.0 / 255.0, blue: 1), Color(red: 0, green: 120.0 / 255.0, blue: 244 / 255)]
+            return Color(red: 0, green: 137.0 / 255.0, blue: 1)
         case .destructive:
-            return [Color(red: 1, green: 0, blue: 0), Color(red: 1, green: 24.0 / 255.0, blue: 31.0 / 255)]
+            return .red
         }
     }
 
     var foregroundColor: Color {
-        switch self {
-        case .primary, .destructive: return .white
-        }
-    }
-
-    var borderColor: Color {
-        switch self {
-        case .primary, .destructive: return .white.opacity(0.28)
-        }
-    }
-
-    var shadowColor: Color {
-        switch self {
-        case .primary: return Color(red: 0, green: 126.0 / 255.0, blue: 1).opacity(0.20)
-        case .destructive: return Color.red.opacity(0.15)
-        }
+        .white
     }
 }
 
@@ -101,18 +86,12 @@ struct OnboardingActionButton: View {
                 .foregroundStyle(tone.foregroundColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: height)
-                .background {
-                    Capsule()
-                        .fill(LinearGradient(colors: tone.colors, startPoint: .top, endPoint: .bottom))
-                }
-                .overlay {
-                    Capsule()
-                        .stroke(tone.borderColor, lineWidth: 1)
-                }
-                .shadow(color: tone.shadowColor, radius: 3, y: 1)
+                .background(.clear)
+                .glassEffect(.regular.tint(tone.glassTint).interactive(), in: .capsule)
                 .contentShape(Capsule())
         }
         .buttonStyle(OnboardingPressButtonStyle())
+        .environment(\\.colorScheme, .light)
     }
 }
 
@@ -132,14 +111,12 @@ struct DisconnectGmailButton: View {
     let action: () -> Void
 
     var body: some View {
-        Button(title, action: action)
-            .font(.system(size: 17, weight: .semibold))
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .frame(height: 50)
-            .background(.clear)
-            .glassEffect(.regular.tint(.red).interactive(), in: .capsule)
-            .environment(\.colorScheme, .light)
+        OnboardingActionButton(
+            title: title,
+            tone: .destructive,
+            height: 50,
+            action: action
+        )
     }
 }
 
