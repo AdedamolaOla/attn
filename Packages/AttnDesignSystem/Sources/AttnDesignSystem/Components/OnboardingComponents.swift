@@ -140,7 +140,7 @@ struct DisconnectGmailButton: View {
             .frame(height: 50)
             .background(.clear)
             .glassEffect(.regular.tint(.red).interactive(), in: .capsule)
-            .environment(\\.colorScheme, .light)
+            .environment(\.colorScheme, .light)
     }
 }
 
