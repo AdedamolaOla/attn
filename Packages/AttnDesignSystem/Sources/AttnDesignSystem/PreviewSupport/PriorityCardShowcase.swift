@@ -84,6 +84,10 @@ public struct PriorityCardShowcase: View {
                     }
                 }
             }
+            // The navigation bar is intentionally hidden, so reserve the device's
+            // actual status-bar inset here. The scroll view still scrolls beneath
+            // that region as its content moves; the header no longer starts behind it.
+            .safeAreaPadding(.top)
             .background(AttnColors.background)
             .toolbar(.hidden, for: .navigationBar)
             .alert("Design preview", isPresented: $showingNotice) {
