@@ -103,12 +103,13 @@ public struct ConfirmAccountView: View {
 
     @ViewBuilder
     private var identityMotion: some View {
-        if identityFloating && !reduceMotion && !isConfirming {
-            KeyframeAnimator(initialValue: IdentityFloatValues(), repeating: true) { value in
+        if !reduceMotion && (identityFloating || isConfirming) {
+            KeyframeAnimator(initialValue: IdentityFloatValues(), repeating: identityFloating) { value in
+                let motionEnabled = identityFloating && !isConfirming
                 identityArtwork
-                    .offset(x: value.x, y: value.y)
-                    .scaleEffect(value.scale)
-                    .rotationEffect(.degrees(Double(value.rotation)))
+                    .offset(x: motionEnabled ? value.x : 0, y: motionEnabled ? value.y : 0)
+                    .scaleEffect(motionEnabled ? value.scale : 1)
+                    .rotationEffect(.degrees(Double(motionEnabled ? value.rotation : 0)))
             } keyframes: { _ in
                 KeyframeTrack(\.x) {
                     CubicKeyframe(2.5, duration: 1.5)
@@ -162,9 +163,9 @@ public struct ConfirmAccountView: View {
             .fill(
                 LinearGradient(
                     colors: [
-                        Color(red: 47 / 255, green: 40 / 255, blue: 142 / 255),
-                        Color(red: 132 / 255, green: 31 / 255, blue: 170 / 255),
-                        Color(red: 17 / 255, green: 133 / 255, blue: 225 / 255)
+                        Color(red: 47.0 / 255.0, green: 40.0 / 255.0, blue: 142.0 / 255.0),
+                        Color(red: 132.0 / 255.0, green: 31.0 / 255.0, blue: 170.0 / 255.0),
+                        Color(red: 17.0 / 255.0, green: 133.0 / 255.0, blue: 225.0 / 255.0)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -183,7 +184,7 @@ public struct ConfirmAccountView: View {
             }
             .overlay {
                 Circle()
-                    .stroke(Color(red: 89 / 255, green: 89 / 255, blue: 89 / 255).opacity(0.25), lineWidth: 8)
+                    .stroke(Color(red: 89.0 / 255.0, green: 89.0 / 255.0, blue: 89.0 / 255.0).opacity(0.25), lineWidth: 8)
                     .blur(radius: 6.5)
                     .offset(y: 1)
                     .clipShape(Circle())
@@ -196,7 +197,7 @@ public struct ConfirmAccountView: View {
     private func identityBadge(_ text: String) -> some View {
         Text(text)
             .font(.system(size: 14, weight: .medium))
-            .foregroundStyle(Color(red: 145 / 255, green: 145 / 255, blue: 145 / 255))
+            .foregroundStyle(Color(red: 145.0 / 255.0, green: 145.0 / 255.0, blue: 145.0 / 255.0))
             .lineLimit(1)
             .minimumScaleFactor(0.8)
             .padding(.horizontal, 10)
@@ -221,7 +222,7 @@ public struct ConfirmAccountView: View {
         Button(action: onCancel) {
             Image(systemName: "xmark")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color(red: 27 / 255, green: 27 / 255, blue: 27 / 255).opacity(0.82))
+                .foregroundStyle(Color(red: 27.0 / 255.0, green: 27.0 / 255.0, blue: 27.0 / 255.0).opacity(0.82))
                 .frame(width: 50, height: 50)
                 .glassEffect(.regular.interactive(), in: .circle)
         }
