@@ -45,16 +45,16 @@ enum OnboardingButtonTone {
     var colors: [Color] {
         switch self {
         case .primary:
-            [Color(red: 0, green: 137 / 255, blue: 1), Color(red: 0, green: 120 / 255, blue: 244 / 255)]
+            return [Color(red: 0, green: 137 / 255, blue: 1), Color(red: 0, green: 120 / 255, blue: 244 / 255)]
         case .destructive:
-            [Color(red: 1, green: 0, blue: 0), Color(red: 1, green: 24 / 255, blue: 31 / 255)]
+            return [Color(red: 1, green: 0, blue: 0), Color(red: 1, green: 24 / 255, blue: 31 / 255)]
         }
     }
 
     var shadowColor: Color {
         switch self {
-        case .primary: Color(red: 0, green: 126 / 255, blue: 1).opacity(0.20)
-        case .destructive: Color.red.opacity(0.15)
+        case .primary: return Color(red: 0, green: 126 / 255, blue: 1).opacity(0.20)
+        case .destructive: return Color.red.opacity(0.15)
         }
     }
 }
