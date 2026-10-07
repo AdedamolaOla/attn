@@ -24,8 +24,8 @@ public struct OnboardingAnalysisResultsView: View {
     public var body: some View {
         GeometryReader { proxy in
             let cardWidth = min(230, max(0, proxy.size.width - 36))
-            let cardHeight: CGFloat = 200
-            let cardSectionHeight: CGFloat = 246
+            let cardHeight: CGFloat = 230
+            let cardSectionHeight: CGFloat = 276
 
             ZStack {
                 if showsBackground {
@@ -33,6 +33,8 @@ public struct OnboardingAnalysisResultsView: View {
                 }
 
                 VStack(spacing: 0) {
+                    Spacer(minLength: 12)
+
                     resultHeading
                         .padding(.top, 20)
                         .padding(.bottom, 60)
@@ -69,27 +71,10 @@ public struct OnboardingAnalysisResultsView: View {
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
-        .sheet(isPresented: $showingInfo) {
-            NavigationStack {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("How these results work")
-                        .font(.title3.weight(.semibold))
-                    Text("ATTN groups analyzed messages by the action they may need. Review the original email when a detail or deadline matters.")
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(24)
-                .navigationTitle("About these results")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("Done") { showingInfo = false }
-                    }
-                }
-            }
-            .presentationDetents([.medium])
-            .presentationDragIndicator(.visible)
+        .alert("About these results", isPresented: $showingInfo) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("We grouped your last 50 emails by the action each may need. Review the original email when a detail or deadline matters.")
         }
         .preferredColorScheme(.light)
         .task {
@@ -106,7 +91,7 @@ public struct OnboardingAnalysisResultsView: View {
                 .monospacedDigit()
                 .accessibilityLabel("\(AnalysisResultsFixture.totalEmails) emails analyzed")
 
-            HStack(spacing: 7) {
+            HStack(spacing: 8) {
                 Text("Need your attention")
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(.white)
@@ -138,7 +123,7 @@ public struct OnboardingAnalysisResultsView: View {
         ZStack {
             translucentCard(width: cardWidth, height: cardHeight)
                 .rotationEffect(.degrees(-12.74))
-                .offset(x: -15, y: cardStage >= 1 ? 0 : 38)
+                .offset(x: -34, y: cardStage >= 1 ? 0 : 38)
                 .scaleEffect(cardStage >= 1 ? 1 : 0.965)
                 .opacity(cardStage >= 1 ? 1 : 0)
                 .zIndex(0)
@@ -146,7 +131,7 @@ public struct OnboardingAnalysisResultsView: View {
 
             translucentCard(width: cardWidth, height: cardHeight)
                 .rotationEffect(.degrees(12.74))
-                .offset(x: 15, y: cardStage >= 2 ? 0 : 38)
+                .offset(x: 34, y: cardStage >= 2 ? 0 : 38)
                 .scaleEffect(cardStage >= 2 ? 1 : 0.965)
                 .opacity(cardStage >= 2 ? 1 : 0)
                 .zIndex(1)
@@ -180,7 +165,7 @@ public struct OnboardingAnalysisResultsView: View {
                 resultRow(item, isLast: index == AnalysisResultsFixture.items.count - 1)
             }
         }
-        .padding(.horizontal, 12)
+        .padding(20)
         .frame(width: width, height: height)
         .background(.white, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay {
@@ -213,7 +198,7 @@ public struct OnboardingAnalysisResultsView: View {
                     .minimumScaleFactor(0.82)
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 64)
+            .frame(height: 62)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("\(item.accessibilityHeader). \(item.detail).")
 
