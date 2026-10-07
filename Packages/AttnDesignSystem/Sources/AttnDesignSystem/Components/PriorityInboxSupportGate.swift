@@ -9,6 +9,7 @@ public struct PriorityInboxSupportGate<Content: View>: View {
     private var promptsCompleted = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
     @State private var isPresenting = false
     @State private var page: Page = .widget
     @State private var notificationAccessDenied = false
@@ -34,6 +35,10 @@ public struct PriorityInboxSupportGate<Content: View>: View {
                     .presentationCornerRadius(32)
                     .presentationBackground(SupportPromptPalette.sheet)
                     .preferredColorScheme(.light)
+            }
+            .onChange(of: scenePhase) { _, phase in
+                guard phase == .active, notificationAccessDenied else { return }
+                refreshNotificationPermission()
             }
             .task {
                 guard !promptsCompleted else { return }
@@ -99,6 +104,22 @@ public struct PriorityInboxSupportGate<Content: View>: View {
         promptsCompleted = true
     }
 
+    private func refreshNotificationPermission() {
+        Task {
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            switch settings.authorizationStatus {
+            case .authorized, .provisional, .ephemeral:
+                dismissSequence()
+            case .denied:
+                notificationAccessDenied = true
+            case .notDetermined:
+                notificationAccessDenied = false
+            @unknown default:
+                break
+            }
+        }
+    }
+
     private func requestNotifications() {
         if notificationAccessDenied {
             guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
@@ -132,7 +153,7 @@ public struct PriorityInboxSupportGate<Content: View>: View {
         }
     }
 
-    private enum Page {
+    private enum Page: Equatable {
         case widget
         case widgetInstructions
         case notifications
@@ -354,7 +375,6 @@ private struct PriorityWidgetPreview: View {
         .padding(12)
         .frame(maxWidth: 350)
         .frame(height: 164)
-        .padding(.horizontal, 24)
         .background {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(
