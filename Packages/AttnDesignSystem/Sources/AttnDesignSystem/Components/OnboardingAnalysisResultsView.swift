@@ -48,7 +48,7 @@ public struct OnboardingAnalysisResultsView: View {
                     .frame(height: cardSectionHeight)
 
                     Text("Based on your last 50 emails")
-                        .font(.system(size: 12, weight: .regular))
+                        .font(.system(size: 14, weight: .regular))
                         .foregroundStyle(AnalysisResultsPalette.secondaryText)
                         .multilineTextAlignment(.center)
                         .padding(.top, 32)
@@ -125,7 +125,7 @@ public struct OnboardingAnalysisResultsView: View {
                 .rotationEffect(.degrees(-12.74))
                 .offset(x: -48, y: cardStage >= 1 ? 0 : 38)
                 .scaleEffect(cardStage >= 1 ? 1 : 0.965)
-                .opacity(cardStage >= 1 ? 0.45 : 0)
+                .opacity(cardStage >= 1 ? 0.15 : 0)
                 .zIndex(0)
                 .accessibilityHidden(true)
 
@@ -133,7 +133,7 @@ public struct OnboardingAnalysisResultsView: View {
                 .rotationEffect(.degrees(12.74))
                 .offset(x: 48, y: cardStage >= 2 ? 0 : 38)
                 .scaleEffect(cardStage >= 2 ? 1 : 0.965)
-                .opacity(cardStage >= 2 ? 0.45 : 0)
+                .opacity(cardStage >= 2 ? 0.15 : 0)
                 .zIndex(1)
                 .accessibilityHidden(true)
 
@@ -179,7 +179,7 @@ public struct OnboardingAnalysisResultsView: View {
 
     private func resultRow(_ item: AnalysisResultItem, isLast: Bool) -> some View {
         VStack(spacing: 0) {
-            VStack(spacing: 3) {
+            VStack(spacing: 8) {
                 Text(countsVisible ? item.header : item.loadingHeader)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(AnalysisResultsPalette.primaryText)
@@ -198,7 +198,7 @@ public struct OnboardingAnalysisResultsView: View {
                     .minimumScaleFactor(0.82)
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 62)
+            .padding(.bottom, isLast ? 0 : 20)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("\(item.accessibilityHeader). \(item.detail).")
 
