@@ -204,16 +204,11 @@ public struct InboxAnalysisView: View {
 /// Background shared across the analysis and its result screen.
 struct InboxAnalysisBackground: View {
     var body: some View {
-        LinearGradient(
-            stops: [
-                .init(color: Color(hex: 0x009FFE), location: 0),
-                .init(color: .white, location: 0.70)
-            ],
-            startPoint: .top,
-            endPoint: .bottom
+        OnboardingGradientBackground(
+            bottomColor: Color(red: 249.0 / 255.0, green: 251.0 / 255.0, blue: 227.0 / 255.0),
+            bottomColorLocation: 1,
+            animates: true
         )
-        .ignoresSafeArea()
-        .accessibilityHidden(true)
     }
 }
 
