@@ -179,6 +179,10 @@ public struct PriorityInboxSupportGate<Content: View>: View {
 }
 
 private struct WidgetPromptPage: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var previewVisible = false
+    @State private var copyVisible = false
+
     let onClose: () -> Void
     let onAddWidget: () -> Void
     let onNotNow: () -> Void
@@ -193,6 +197,8 @@ private struct WidgetPromptPage: View {
                 VStack(spacing: 0) {
                     PriorityWidgetPreview()
                         .padding(.top, 14)
+                        .opacity(previewVisible ? 1 : 0)
+                        .offset(y: previewVisible ? 0 : 12)
 
                     Text("Keep what matters within reach")
                         .font(.system(size: 25, weight: .bold))
@@ -200,6 +206,8 @@ private struct WidgetPromptPage: View {
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 24)
+                        .opacity(copyVisible ? 1 : 0)
+                        .offset(y: copyVisible ? 0 : 8)
 
                     Text("Add the widget to your Home Screen to see your most important priorities without opening the app.")
                         .font(.system(size: 16, weight: .regular))
@@ -209,6 +217,8 @@ private struct WidgetPromptPage: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 10)
                         .padding(.horizontal, 28)
+                        .opacity(copyVisible ? 1 : 0)
+                        .offset(y: copyVisible ? 0 : 8)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.bottom, 16)
@@ -227,8 +237,25 @@ private struct WidgetPromptPage: View {
             .padding(.horizontal, 24)
             .padding(.top, 8)
             .padding(.bottom, 16)
+            .opacity(copyVisible ? 1 : 0)
+            .offset(y: copyVisible ? 0 : 8)
         }
         .accessibilityElement(children: .contain)
+        .task {
+            guard !reduceMotion else {
+                previewVisible = true
+                copyVisible = true
+                return
+            }
+            withAnimation(.smooth(duration: 0.24)) {
+                previewVisible = true
+            }
+            try? await Task.sleep(for: .milliseconds(70))
+            guard !Task.isCancelled else { return }
+            withAnimation(.smooth(duration: 0.24)) {
+                copyVisible = true
+            }
+        }
     }
 }
 
@@ -298,6 +325,10 @@ private struct WidgetInstructionsPage: View {
 }
 
 private struct NotificationsPromptPage: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var previewVisible = false
+    @State private var copyVisible = false
+
     let onClose: () -> Void
     let notificationsAreDenied: Bool
     let onAllow: () -> Void
@@ -313,6 +344,8 @@ private struct NotificationsPromptPage: View {
                 VStack(spacing: 0) {
                     LockScreenNotificationPreview()
                         .padding(.top, 16)
+                        .opacity(previewVisible ? 1 : 0)
+                        .offset(y: previewVisible ? 0 : 12)
 
                     Text("Stay ahead of what matters")
                         .font(.system(size: 25, weight: .bold))
@@ -320,6 +353,8 @@ private struct NotificationsPromptPage: View {
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 24)
+                        .opacity(copyVisible ? 1 : 0)
+                        .offset(y: copyVisible ? 0 : 8)
 
                     Text(notificationsAreDenied
                          ? "Notifications are off. You can turn them on in Settings whenever you’re ready."
@@ -331,6 +366,8 @@ private struct NotificationsPromptPage: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 10)
                         .padding(.horizontal, 28)
+                        .opacity(copyVisible ? 1 : 0)
+                        .offset(y: copyVisible ? 0 : 8)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.bottom, 16)
@@ -353,6 +390,23 @@ private struct NotificationsPromptPage: View {
             .padding(.horizontal, 24)
             .padding(.top, 8)
             .padding(.bottom, 16)
+            .opacity(copyVisible ? 1 : 0)
+            .offset(y: copyVisible ? 0 : 8)
+        }
+        .task {
+            guard !reduceMotion else {
+                previewVisible = true
+                copyVisible = true
+                return
+            }
+            withAnimation(.smooth(duration: 0.24)) {
+                previewVisible = true
+            }
+            try? await Task.sleep(for: .milliseconds(70))
+            guard !Task.isCancelled else { return }
+            withAnimation(.smooth(duration: 0.24)) {
+                copyVisible = true
+            }
         }
     }
 }
