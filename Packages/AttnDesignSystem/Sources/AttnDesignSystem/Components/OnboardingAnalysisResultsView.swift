@@ -185,21 +185,19 @@ public struct OnboardingAnalysisResultsView: View {
         VStack(spacing: 0) {
             VStack(spacing: 8) {
                 Text(countsVisible ? item.header : item.loadingHeader)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.system(size: AnalysisResultsTypography.headerSize, weight: .medium))
                     .foregroundStyle(AnalysisResultsPalette.primaryText)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
-                    .minimumScaleFactor(0.82)
                     .contentTransition(.numericText())
 
                 Text(item.detail)
-                    .font(.system(size: 12, weight: .regular))
+                    .font(.system(size: AnalysisResultsTypography.supportingSize, weight: .regular))
                     .foregroundStyle(item.detailIsUrgent
                         ? AnalysisResultsPalette.urgent
                         : AnalysisResultsPalette.secondaryText)
                     .multilineTextAlignment(.center)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.82)
             }
             .frame(maxWidth: .infinity)
             .padding(.top, isFirst ? 0 : 20)
@@ -296,6 +294,11 @@ private enum AnalysisResultsFixture {
             detailIsUrgent: false
         )
     ]
+}
+
+private enum AnalysisResultsTypography {
+    static let headerSize: CGFloat = 16
+    static let supportingSize: CGFloat = 12
 }
 
 private enum AnalysisResultsPalette {
