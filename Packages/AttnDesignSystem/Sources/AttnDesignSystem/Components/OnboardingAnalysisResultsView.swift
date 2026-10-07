@@ -91,7 +91,7 @@ public struct OnboardingAnalysisResultsView: View {
                 .monospacedDigit()
                 .accessibilityLabel("\(AnalysisResultsFixture.totalEmails) emails analyzed")
 
-            HStack(spacing: 8) {
+            HStack(spacing: 4) {
                 Text("Need your attention")
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(.white)
@@ -123,17 +123,17 @@ public struct OnboardingAnalysisResultsView: View {
         ZStack {
             translucentCard(width: cardWidth, height: cardHeight)
                 .rotationEffect(.degrees(-12.74))
-                .offset(x: -34, y: cardStage >= 1 ? 0 : 38)
+                .offset(x: -48, y: cardStage >= 1 ? 0 : 38)
                 .scaleEffect(cardStage >= 1 ? 1 : 0.965)
-                .opacity(cardStage >= 1 ? 1 : 0)
+                .opacity(cardStage >= 1 ? 0.45 : 0)
                 .zIndex(0)
                 .accessibilityHidden(true)
 
             translucentCard(width: cardWidth, height: cardHeight)
                 .rotationEffect(.degrees(12.74))
-                .offset(x: 34, y: cardStage >= 2 ? 0 : 38)
+                .offset(x: 48, y: cardStage >= 2 ? 0 : 38)
                 .scaleEffect(cardStage >= 2 ? 1 : 0.965)
-                .opacity(cardStage >= 2 ? 1 : 0)
+                .opacity(cardStage >= 2 ? 0.45 : 0)
                 .zIndex(1)
                 .accessibilityHidden(true)
 
@@ -149,7 +149,7 @@ public struct OnboardingAnalysisResultsView: View {
 
     private func translucentCard(width: CGFloat, height: CGFloat) -> some View {
         RoundedRectangle(cornerRadius: 28, style: .continuous)
-            .fill(.white.opacity(0.31))
+            .fill(.white)
             .overlay {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
                     .stroke(.white.opacity(0.62), lineWidth: 1)
@@ -268,25 +268,25 @@ private enum AnalysisResultsFixture {
     static let items = [
         AnalysisResultItem(
             id: "today",
-            header: "3 emails due today",
-            loadingHeader: "0 emails due today",
-            accessibilityHeader: "3 emails due today",
+            header: "3 due today",
+            loadingHeader: "0 due today",
+            accessibilityHeader: "3 due today",
             detail: "Urgent Action Needed",
             detailIsUrgent: true
         ),
         AnalysisResultItem(
             id: "upcoming",
-            header: "2 emails due this week",
-            loadingHeader: "0 emails due this week",
-            accessibilityHeader: "2 emails due this week",
+            header: "2 due this week",
+            loadingHeader: "0 due this week",
+            accessibilityHeader: "2 due this week",
             detail: "Follow-ups/requests",
             detailIsUrgent: false
         ),
         AnalysisResultItem(
             id: "fyi",
-            header: "2 emails FYI / low priority",
-            loadingHeader: "0 emails FYI / low priority",
-            accessibilityHeader: "2 emails FYI / low priority",
+            header: "2 FYI / low priority",
+            loadingHeader: "0 FYI / low priority",
+            accessibilityHeader: "2 FYI / low priority",
             detail: "No Immediate Action",
             detailIsUrgent: false
         )
