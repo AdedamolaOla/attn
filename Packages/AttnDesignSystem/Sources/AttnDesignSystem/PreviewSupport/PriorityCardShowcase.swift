@@ -12,8 +12,9 @@ public struct PriorityCardShowcase: View {
 
     public var body: some View {
         NavigationStack {
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+            GeometryReader { _ in
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
                     TimelineView(.periodic(from: .now, by: 60)) { context in
                         TodayBriefingTitle(
                             date: context.date,
@@ -82,7 +83,11 @@ public struct PriorityCardShowcase: View {
                             .frame(maxWidth: .infinity)
                             .background(AttnColors.background)
                     }
-                }
+                    }
+                    // The geometry reader is constrained to the safe viewport. Clip at
+                    // its top edge so scrolled cards cannot draw into the status bar.
+                    .clipped()
+                    .background(AttnColors.background)
             }
             .background(AttnColors.background)
             .toolbar(.hidden, for: .navigationBar)
@@ -90,8 +95,7 @@ public struct PriorityCardShowcase: View {
                 Button("OK", role: .cancel) {}
             } message: { Text(notice) }
         }
-        // Extend only the screen surface beneath the status bar. ScrollView keeps
-        // its default safe-area content origin, so the title begins below system chrome.
+        // Keep the status-bar surface visually continuous with the app background.
         .background {
             AttnColors.background.ignoresSafeArea(edges: .top)
         }
