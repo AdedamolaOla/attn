@@ -24,7 +24,7 @@ public struct OnboardingAnalysisResultsView: View {
     public var body: some View {
         GeometryReader { proxy in
             let cardWidth = min(230, max(0, proxy.size.width - 36))
-            let cardHeight: CGFloat = 230
+            let cardHeight: CGFloat = 250
             let cardSectionHeight: CGFloat = 276
 
             ZStack {
