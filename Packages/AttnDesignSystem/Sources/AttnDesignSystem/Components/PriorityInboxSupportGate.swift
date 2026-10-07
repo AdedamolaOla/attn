@@ -62,13 +62,13 @@ public struct PriorityInboxSupportGate<Content: View>: View {
                         AttnHaptics.impactLight()
                         changePage(to: .widgetInstructions)
                     },
-                    onNotNow: { changePage(to: .notifications) }
+                    onNotNow: continueAfterWidgetPrompt
                 )
             case .widgetInstructions:
                 WidgetInstructionsPage(
                     onClose: dismissSequence,
-                    onContinue: { changePage(to: .notifications) },
-                    onNotNow: { changePage(to: .notifications) }
+                    onContinue: continueAfterWidgetPrompt,
+                    onNotNow: continueAfterWidgetPrompt
                 )
             case .notifications:
                 NotificationsPromptPage(
@@ -102,6 +102,24 @@ public struct PriorityInboxSupportGate<Content: View>: View {
     private func markPromptsComplete() {
         // Swiping the native sheet down is treated like choosing “Not now”.
         promptsCompleted = true
+    }
+
+    private func continueAfterWidgetPrompt() {
+        Task {
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            switch settings.authorizationStatus {
+            case .authorized, .provisional, .ephemeral:
+                dismissSequence()
+            case .denied:
+                notificationAccessDenied = true
+                changePage(to: .notifications)
+            case .notDetermined:
+                notificationAccessDenied = false
+                changePage(to: .notifications)
+            @unknown default:
+                changePage(to: .notifications)
+            }
+        }
     }
 
     private func refreshNotificationPermission() {
