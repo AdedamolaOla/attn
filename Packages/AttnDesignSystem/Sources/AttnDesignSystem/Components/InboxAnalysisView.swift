@@ -223,8 +223,10 @@ public struct PostConnectionAnalysisFlow: View {
     public var body: some View {
         Group {
             if showingHome {
-                PriorityCardShowcase()
-                    .transition(.opacity)
+                PriorityInboxSupportGate {
+                    PriorityCardShowcase()
+                }
+                .transition(.opacity)
             } else {
                 ZStack {
                     InboxAnalysisView(
