@@ -84,15 +84,16 @@ public struct PriorityCardShowcase: View {
                     }
                 }
             }
-            // The navigation bar is intentionally hidden, so reserve the device's
-            // actual status-bar inset here. The scroll view still scrolls beneath
-            // that region as its content moves; the header no longer starts behind it.
-            .safeAreaPadding(.top)
             .background(AttnColors.background)
             .toolbar(.hidden, for: .navigationBar)
             .alert("Design preview", isPresented: $showingNotice) {
                 Button("OK", role: .cancel) {}
             } message: { Text(notice) }
+        }
+        // Extend only the screen surface beneath the status bar. ScrollView keeps
+        // its default safe-area content origin, so the title begins below system chrome.
+        .background {
+            AttnColors.background.ignoresSafeArea(edges: .top)
         }
         .fullScreenCover(isPresented: $showingProfile) { ProfileView() }
     }
