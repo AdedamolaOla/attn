@@ -459,7 +459,14 @@ private struct LockScreenNotificationPreview: View {
                 .foregroundStyle(.white)
             }
             .padding(12)
-            .background(.ultraThinMaterial.opacity(0.72), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .background {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(.black.opacity(0.18))
+                    }
+            }
         }
         .padding(18)
         .frame(maxWidth: .infinity)
@@ -494,7 +501,6 @@ private func promptHeader(onClose: @escaping () -> Void) -> some View {
     HStack {
         Spacer()
         OnboardingCloseButton(accessibilityLabel: "Close setup prompts", action: onClose)
-            .frame(width: 44, height: 44)
     }
 }
 
