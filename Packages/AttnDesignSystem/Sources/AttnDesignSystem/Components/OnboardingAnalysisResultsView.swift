@@ -203,6 +203,7 @@ public struct OnboardingAnalysisResultsView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.top, isFirst ? 0 : 20)
+            .padding(.bottom, isLast ? 0 : 20)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("\(item.accessibilityHeader). \(item.detail).")
 
@@ -267,7 +268,7 @@ private struct AnalysisResultItem: Identifiable {
 }
 
 private enum AnalysisResultsFixture {
-    static let totalEmails = 14
+    static let totalEmails = 7
 
     static let items = [
         AnalysisResultItem(
