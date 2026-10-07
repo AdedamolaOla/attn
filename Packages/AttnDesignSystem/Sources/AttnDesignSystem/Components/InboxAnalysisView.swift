@@ -135,7 +135,6 @@ public struct InboxAnalysisView: View {
                     .font(.system(size: 42, weight: .bold, design: .default))
                     .foregroundStyle(Color(hex: 0x1B1B1B))
                     .contentTransition(.numericText())
-                    .animation(reduceMotion ? nil : .easeOut(duration: 0.28), value: progress)
                     .accessibilityHidden(true)
             }
             .accessibilityElement(children: .ignore)
