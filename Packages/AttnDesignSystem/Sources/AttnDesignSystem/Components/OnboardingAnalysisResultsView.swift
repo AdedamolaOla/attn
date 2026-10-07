@@ -125,7 +125,7 @@ public struct OnboardingAnalysisResultsView: View {
                 .rotationEffect(.degrees(-12.74))
                 .offset(x: -48, y: cardStage >= 1 ? 0 : 38)
                 .scaleEffect(cardStage >= 1 ? 1 : 0.965)
-                .opacity(cardStage >= 1 ? 0.15 : 0)
+                .opacity(cardStage >= 1 ? 0.25 : 0)
                 .zIndex(0)
                 .accessibilityHidden(true)
 
@@ -133,7 +133,7 @@ public struct OnboardingAnalysisResultsView: View {
                 .rotationEffect(.degrees(12.74))
                 .offset(x: 48, y: cardStage >= 2 ? 0 : 38)
                 .scaleEffect(cardStage >= 2 ? 1 : 0.965)
-                .opacity(cardStage >= 2 ? 0.15 : 0)
+                .opacity(cardStage >= 2 ? 0.25 : 0)
                 .zIndex(1)
                 .accessibilityHidden(true)
 
@@ -162,7 +162,11 @@ public struct OnboardingAnalysisResultsView: View {
         VStack(spacing: 0) {
             ForEach(AnalysisResultsFixture.items.indices, id: \.self) { index in
                 let item = AnalysisResultsFixture.items[index]
-                resultRow(item, isLast: index == AnalysisResultsFixture.items.count - 1)
+                resultRow(
+                    item,
+                    isFirst: index == AnalysisResultsFixture.items.startIndex,
+                    isLast: index == AnalysisResultsFixture.items.count - 1
+                )
             }
         }
         .padding(20)
@@ -177,7 +181,7 @@ public struct OnboardingAnalysisResultsView: View {
         .accessibilityElement(children: .contain)
     }
 
-    private func resultRow(_ item: AnalysisResultItem, isLast: Bool) -> some View {
+    private func resultRow(_ item: AnalysisResultItem, isFirst: Bool, isLast: Bool) -> some View {
         VStack(spacing: 0) {
             VStack(spacing: 8) {
                 Text(countsVisible ? item.header : item.loadingHeader)
@@ -198,7 +202,7 @@ public struct OnboardingAnalysisResultsView: View {
                     .minimumScaleFactor(0.82)
             }
             .frame(maxWidth: .infinity)
-            .padding(.bottom, isLast ? 0 : 20)
+            .padding(.top, isFirst ? 0 : 20)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("\(item.accessibilityHeader). \(item.detail).")
 
