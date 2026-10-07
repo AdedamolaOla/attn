@@ -11,7 +11,7 @@ public struct PriorityInboxSupportGate<Content: View>: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isPresenting = false
     @State private var page: Page = .widget
-    @State private var showNotificationSettingsAlert = false
+    @State private var notificationAccessDenied = false
 
     private let content: Content
 
@@ -34,15 +34,6 @@ public struct PriorityInboxSupportGate<Content: View>: View {
                     .presentationCornerRadius(32)
                     .presentationBackground(SupportPromptPalette.sheet)
                     .preferredColorScheme(.light)
-                    .alert("Notifications are off", isPresented: $showNotificationSettingsAlert) {
-                        Button("Not now", role: .cancel) {}
-                        Button("Open Settings") {
-                            guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
-                            UIApplication.shared.open(url)
-                        }
-                    } message: {
-                        Text("You can turn on ATTN notifications in Settings whenever you’re ready.")
-                    }
             }
             .task {
                 guard !promptsCompleted else { return }
@@ -77,6 +68,7 @@ public struct PriorityInboxSupportGate<Content: View>: View {
             case .notifications:
                 NotificationsPromptPage(
                     onClose: dismissSequence,
+                    notificationsAreDenied: notificationAccessDenied,
                     onAllow: requestNotifications,
                     onNotNow: dismissSequence
                 )
@@ -108,6 +100,12 @@ public struct PriorityInboxSupportGate<Content: View>: View {
     }
 
     private func requestNotifications() {
+        if notificationAccessDenied {
+            guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+            UIApplication.shared.open(url)
+            return
+        }
+
         Task {
             let center = UNUserNotificationCenter.current()
             let settings = await center.notificationSettings()
@@ -119,18 +117,15 @@ public struct PriorityInboxSupportGate<Content: View>: View {
                     if granted {
                         dismissSequence()
                     } else {
-                        dismissSequence()
-                        showNotificationSettingsAlert = true
+                        notificationAccessDenied = true
                     }
                 } catch {
-                    dismissSequence()
-                    showNotificationSettingsAlert = true
+                    notificationAccessDenied = true
                 }
             case .authorized, .provisional, .ephemeral:
                 dismissSequence()
             case .denied:
-                dismissSequence()
-                showNotificationSettingsAlert = true
+                notificationAccessDenied = true
             @unknown default:
                 dismissSequence()
             }
@@ -265,6 +260,7 @@ private struct WidgetInstructionsPage: View {
 
 private struct NotificationsPromptPage: View {
     let onClose: () -> Void
+    let notificationsAreDenied: Bool
     let onAllow: () -> Void
     let onNotNow: () -> Void
 
@@ -286,7 +282,9 @@ private struct NotificationsPromptPage: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 24)
 
-                    Text("Turn on notifications and attn will let you know when something important needs your attention.")
+                    Text(notificationsAreDenied
+                         ? "Notifications are off. You can turn them on in Settings whenever you’re ready."
+                         : "Turn on notifications and attn will let you know when something important needs your attention.")
                         .font(.system(size: 16, weight: .regular))
                         .foregroundStyle(SupportPromptPalette.secondary)
                         .multilineTextAlignment(.center)
@@ -300,7 +298,12 @@ private struct NotificationsPromptPage: View {
             }
 
             VStack(spacing: 10) {
-                OnboardingActionButton(title: "Allow notifications", tone: .primary, height: 52, action: onAllow)
+                OnboardingActionButton(
+                    title: notificationsAreDenied ? "Open Settings" : "Allow notifications",
+                    tone: .primary,
+                    height: 52,
+                    action: onAllow
+                )
                     .accessibilityHint("Opens the iOS notification permission request.")
 
                 Button("Not now", action: onNotNow)
@@ -317,10 +320,10 @@ private struct NotificationsPromptPage: View {
 
 private struct PriorityWidgetPreview: View {
     private let priorities = [
-        WidgetPriority(title: "Credit card payment", timing: "Due today", urgent: true),
-        WidgetPriority(title: "Flight check-in", timing: "Opens in 3 hours", urgent: true),
-        WidgetPriority(title: "Tax filing notice", timing: "Due this week", urgent: true),
-        WidgetPriority(title: "Interview", timing: "Tomorrow · 9:30 AM", urgent: false)
+        WidgetPriority(id: "payment", title: "Credit card payment", timing: "Due today", urgent: true),
+        WidgetPriority(id: "flight", title: "Flight check-in", timing: "Opens in 3 hours", urgent: true),
+        WidgetPriority(id: "tax", title: "Tax filing notice", timing: "Due this week", urgent: true),
+        WidgetPriority(id: "interview", title: "Interview", timing: "Tomorrow · 9:30 AM", urgent: false)
     ]
 
     private let columns = [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)]
@@ -349,8 +352,9 @@ private struct PriorityWidgetPreview: View {
             }
         }
         .padding(12)
-        .frame(width: min(UIScreen.main.bounds.width - 72, 350))
+        .frame(maxWidth: 350)
         .frame(height: 164)
+        .padding(.horizontal, 24)
         .background {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(
@@ -442,7 +446,7 @@ private struct LockScreenNotificationPreview: View {
 }
 
 private struct WidgetPriority: Identifiable {
-    let id = UUID()
+    let id: String
     let title: String
     let timing: String
     let urgent: Bool
