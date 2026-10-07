@@ -11,7 +11,8 @@ public struct PriorityCardShowcase: View {
     public init() {}
 
     public var body: some View {
-        NavigationStack {
+        GeometryReader { geometry in
+            NavigationStack {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
                     TimelineView(.periodic(from: .now, by: 60)) { context in
@@ -87,13 +88,27 @@ public struct PriorityCardShowcase: View {
             // The navigation bar is intentionally hidden, so reserve the device's
             // actual status-bar inset here. The scroll view still scrolls beneath
             // that region as its content moves; the header no longer starts behind it.
-            .safeAreaPadding(.top)
-            .background(AttnColors.background)
+            .safeAreaPadding(.top, geometry.safeAreaInsets.top)
+            .background(AttnColors.background.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
             .alert("Design preview", isPresented: $showingNotice) {
                 Button("OK", role: .cancel) {}
             } message: { Text(notice) }
+            }
+            // The scroll content continues under the status bar. Keep a fixed,
+            // opaque ATTN surface over that region so scrolling text never shows
+            // through the system status indicators.
+            .ignoresSafeArea(edges: .top)
+            .overlay(alignment: .top) {
+                AttnColors.background
+                    .frame(height: geometry.safeAreaInsets.top)
+                    .frame(maxWidth: .infinity)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                    .zIndex(1)
+            }
         }
+        .background(AttnColors.background.ignoresSafeArea())
         .fullScreenCover(isPresented: $showingProfile) { ProfileView() }
     }
 
