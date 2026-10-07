@@ -5,30 +5,33 @@ import SwiftUI
 public struct InboxAnalysisView: View {
     private let startDate: Date
     private let onContinue: () -> Void
+    private let onAnalysisFinished: () -> Void
+
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var showingCompletion = false
+    @State private var analysisSceneVisible = true
 
     private let analysisDuration: TimeInterval = 6
 
-    public init(startDate: Date = Date(), onContinue: @escaping () -> Void = {}) {
+    public init(
+        startDate: Date = Date(),
+        onContinue: @escaping () -> Void = {},
+        onAnalysisFinished: @escaping () -> Void = {}
+    ) {
         self.startDate = startDate
         self.onContinue = onContinue
+        self.onAnalysisFinished = onAnalysisFinished
     }
 
     public var body: some View {
         ZStack {
-            LinearGradient(
-                stops: [
-                    .init(color: Color(hex: 0x009FFE), location: 0),
-                    .init(color: .white, location: 0.70)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            InboxAnalysisBackground()
 
             TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
                 let elapsed = max(0, timeline.date.timeIntervalSince(startDate))
-                let progress = min(100, 1 + Int((elapsed / analysisDuration) * 99))
+                let progress = showingCompletion
+                    ? 100
+                    : min(99, 1 + Int((min(elapsed, analysisDuration) / analysisDuration) * 98))
                 let phase = reduceMotion ? 0 : elapsed * (2 * .pi / 8.5)
 
                 VStack(spacing: 16) {
@@ -45,14 +48,28 @@ public struct InboxAnalysisView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .offset(y: -25)
+                .opacity(analysisSceneVisible ? 1 : 0)
+                .scaleEffect(analysisSceneVisible ? 1 : 0.96)
+                .animation(
+                    reduceMotion ? .easeOut(duration: 0.12) : .easeOut(duration: 0.22),
+                    value: analysisSceneVisible
+                )
             }
 
             closeButton
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                 .padding(.top, 14)
                 .padding(.trailing, 24)
+                .opacity(analysisSceneVisible ? 1 : 0)
+                .animation(
+                    reduceMotion ? .easeOut(duration: 0.12) : .easeOut(duration: 0.22),
+                    value: analysisSceneVisible
+                )
         }
         .preferredColorScheme(.light)
+        .task(id: startDate) {
+            await finishAnalysis()
+        }
     }
 
     private func analysisOrb(progress: Int, phase: TimeInterval) -> some View {
@@ -117,10 +134,12 @@ public struct InboxAnalysisView: View {
                 Text(String(progress) + "%")
                     .font(.system(size: 42, weight: .bold, design: .default))
                     .foregroundStyle(Color(hex: 0x1B1B1B))
+                    .contentTransition(.numericText())
+                    .animation(reduceMotion ? nil : .easeOut(duration: 0.28), value: progress)
                     .accessibilityHidden(true)
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Analyzing your inbox")
+            .accessibilityLabel("Analyzing your inbox, \(progress) percent")
         }
         .frame(width: 203, height: 203)
     }
@@ -149,9 +168,59 @@ public struct InboxAnalysisView: View {
             action: onContinue
         )
     }
+
+    @MainActor
+    private func finishAnalysis() async {
+        let elapsed = max(0, Date().timeIntervalSince(startDate))
+        let remaining = max(0, analysisDuration - elapsed)
+
+        if remaining > 0 {
+            try? await Task.sleep(for: .seconds(remaining))
+        }
+        guard !Task.isCancelled else { return }
+
+        if reduceMotion {
+            showingCompletion = true
+        } else {
+            withAnimation(.easeOut(duration: 0.28)) {
+                showingCompletion = true
+            }
+        }
+
+        // Hold 100% briefly so the completed count reads before the orb exits.
+        try? await Task.sleep(for: .milliseconds(190))
+        guard !Task.isCancelled else { return }
+
+        withAnimation(reduceMotion ? .easeOut(duration: 0.12) : .easeOut(duration: 0.22)) {
+            analysisSceneVisible = false
+        }
+
+        // The results begin during the orb's exit, keeping this as one transition.
+        try? await Task.sleep(for: .milliseconds(100))
+        guard !Task.isCancelled else { return }
+        onAnalysisFinished()
+    }
+}
+
+/// Background shared across the analysis and its result screen.
+struct InboxAnalysisBackground: View {
+    var body: some View {
+        LinearGradient(
+            stops: [
+                .init(color: Color(hex: 0x009FFE), location: 0),
+                .init(color: .white, location: 0.70)
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .ignoresSafeArea()
+        .accessibilityHidden(true)
+    }
 }
 
 public struct PostConnectionAnalysisFlow: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var showingResults = false
     @State private var showingHome = false
     @State private var startDate = Date()
 
@@ -163,27 +232,45 @@ public struct PostConnectionAnalysisFlow: View {
                 PriorityCardShowcase()
                     .transition(.opacity)
             } else {
-                InboxAnalysisView(startDate: startDate) {
-                    continueToHome()
+                ZStack {
+                    InboxAnalysisView(
+                        startDate: startDate,
+                        onContinue: continueToHome,
+                        onAnalysisFinished: presentResults
+                    )
+                    .zIndex(0)
+
+                    if showingResults {
+                        OnboardingAnalysisResultsView(
+                            showsBackground: false,
+                            onViewPriorityInbox: continueToHome
+                        )
+                        .transition(.opacity)
+                        .zIndex(1)
+                    }
                 }
-                .transition(.opacity)
+                .animation(
+                    reduceMotion ? .easeOut(duration: 0.12) : .easeInOut(duration: 0.22),
+                    value: showingResults
+                )
             }
         }
-        .task {
-            guard !showingHome else { return }
-            do {
-                // Let 100% stay visible briefly before continuing to Home.
-                try await Task.sleep(for: .seconds(6.6))
-            } catch {
-                return
-            }
-            continueToHome()
+        .animation(
+            reduceMotion ? .easeOut(duration: 0.12) : .easeInOut(duration: 0.24),
+            value: showingHome
+        )
+    }
+
+    private func presentResults() {
+        guard !showingResults, !showingHome else { return }
+        withAnimation(reduceMotion ? .easeOut(duration: 0.12) : .easeInOut(duration: 0.22)) {
+            showingResults = true
         }
     }
 
     private func continueToHome() {
         guard !showingHome else { return }
-        withAnimation(.easeInOut(duration: 0.24)) {
+        withAnimation(reduceMotion ? .easeOut(duration: 0.12) : .easeInOut(duration: 0.24)) {
             showingHome = true
         }
     }
