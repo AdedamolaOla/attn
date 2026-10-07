@@ -23,7 +23,9 @@ public struct OnboardingAnalysisResultsView: View {
 
     public var body: some View {
         GeometryReader { proxy in
-            let stackHeight = min(350, max(296, proxy.size.height * 0.44))
+            let cardWidth = min(230, max(0, proxy.size.width - 36))
+            let cardHeight: CGFloat = 200
+            let cardSectionHeight: CGFloat = 246
 
             ZStack {
                 if showsBackground {
@@ -32,21 +34,25 @@ public struct OnboardingAnalysisResultsView: View {
 
                 VStack(spacing: 0) {
                     resultHeading
-                        .padding(.top, 12)
+                        .padding(.top, 20)
+                        .padding(.bottom, 60)
+
+                    cardStack(
+                        sectionWidth: max(0, proxy.size.width - 48),
+                        sectionHeight: cardSectionHeight,
+                        cardWidth: cardWidth,
+                        cardHeight: cardHeight
+                    )
+                    .frame(height: cardSectionHeight)
+
+                    Text("Based on your last 50 emails")
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(AnalysisResultsPalette.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 32)
+                        .accessibilityLabel("Based on your last 50 emails")
 
                     Spacer(minLength: 12)
-
-                    cardStack(width: max(0, proxy.size.width - 48), height: stackHeight)
-                        .frame(height: stackHeight)
-
-                    Spacer(minLength: 10)
-
-                    Text("Based on \(AnalysisResultsFixture.totalEmails) emails reviewed")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.84))
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 4)
-                        .accessibilityLabel("Based on \(AnalysisResultsFixture.totalEmails) emails reviewed")
 
                     OnboardingActionButton(
                         title: "View Priority Inbox",
@@ -123,34 +129,36 @@ public struct OnboardingAnalysisResultsView: View {
         .accessibilityElement(children: .contain)
     }
 
-    private func cardStack(width: CGFloat, height: CGFloat) -> some View {
-        let frontWidth = min(width - 14, 354)
-        let frontHeight = min(height - 42, 278)
-
-        return ZStack {
-            translucentCard(width: frontWidth - 18, height: frontHeight - 8)
+    private func cardStack(
+        sectionWidth: CGFloat,
+        sectionHeight: CGFloat,
+        cardWidth: CGFloat,
+        cardHeight: CGFloat
+    ) -> some View {
+        ZStack {
+            translucentCard(width: cardWidth, height: cardHeight)
                 .rotationEffect(.degrees(-12.74))
-                .offset(x: -22, y: cardStage >= 1 ? -2 : 38)
+                .offset(x: -15, y: cardStage >= 1 ? 0 : 38)
                 .scaleEffect(cardStage >= 1 ? 1 : 0.965)
                 .opacity(cardStage >= 1 ? 1 : 0)
                 .zIndex(0)
                 .accessibilityHidden(true)
 
-            translucentCard(width: frontWidth - 10, height: frontHeight - 2)
-                .rotationEffect(.degrees(9.5))
-                .offset(x: 19, y: cardStage >= 2 ? -1 : 38)
+            translucentCard(width: cardWidth, height: cardHeight)
+                .rotationEffect(.degrees(12.74))
+                .offset(x: 15, y: cardStage >= 2 ? 0 : 38)
                 .scaleEffect(cardStage >= 2 ? 1 : 0.965)
                 .opacity(cardStage >= 2 ? 1 : 0)
                 .zIndex(1)
                 .accessibilityHidden(true)
 
-            summaryCard(width: frontWidth, height: frontHeight)
+            summaryCard(width: cardWidth, height: cardHeight)
                 .offset(y: cardStage >= 3 ? 0 : 38)
                 .scaleEffect(cardStage >= 3 ? 1 : 0.965)
                 .opacity(cardStage >= 3 ? 1 : 0)
                 .zIndex(2)
         }
-        .frame(width: width, height: height)
+        .frame(width: sectionWidth, height: sectionHeight)
         .accessibilityElement(children: .contain)
     }
 
@@ -172,8 +180,7 @@ public struct OnboardingAnalysisResultsView: View {
                 resultRow(item, isLast: index == AnalysisResultsFixture.items.count - 1)
             }
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
         .frame(width: width, height: height)
         .background(.white, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay {
@@ -187,46 +194,33 @@ public struct OnboardingAnalysisResultsView: View {
 
     private func resultRow(_ item: AnalysisResultItem, isLast: Bool) -> some View {
         VStack(spacing: 0) {
-            HStack(spacing: 12) {
-                Image(systemName: item.symbol)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(item.tint)
-                    .frame(width: 38, height: 38)
-                    .background(item.tint.opacity(0.11), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    .accessibilityHidden(true)
-
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(item.title)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(AnalysisResultsPalette.primaryText)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.84)
-
-                    Text(item.detail)
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundStyle(AnalysisResultsPalette.secondaryText)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.84)
-                }
-
-                Spacer(minLength: 2)
-
-                Text(countsVisible ? "\(item.count)" : "0")
-                    .font(.system(size: 19, weight: .semibold, design: .rounded))
+            VStack(spacing: 3) {
+                Text(countsVisible ? item.header : item.loadingHeader)
+                    .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(AnalysisResultsPalette.primaryText)
-                    .monospacedDigit()
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.82)
                     .contentTransition(.numericText())
-                    .accessibilityHidden(true)
+
+                Text(item.detail)
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(item.detailIsUrgent
+                        ? AnalysisResultsPalette.urgent
+                        : AnalysisResultsPalette.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
             }
-            .frame(minHeight: 66)
+            .frame(maxWidth: .infinity)
+            .frame(height: 64)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("\(item.count) emails. \(item.title). \(item.detail).")
+            .accessibilityLabel("\(item.accessibilityHeader). \(item.detail).")
 
             if !isLast {
                 Rectangle()
                     .fill(AnalysisResultsPalette.separator)
-                    .frame(height: 0.7)
-                    .padding(.leading, 50)
+                    .frame(height: 1)
                     .accessibilityHidden(true)
             }
         }
@@ -276,11 +270,11 @@ public struct OnboardingAnalysisResultsView: View {
 
 private struct AnalysisResultItem: Identifiable {
     let id: String
-    let title: String
+    let header: String
+    let loadingHeader: String
+    let accessibilityHeader: String
     let detail: String
-    let count: Int
-    let symbol: String
-    let tint: Color
+    let detailIsUrgent: Bool
 }
 
 private enum AnalysisResultsFixture {
@@ -289,38 +283,36 @@ private enum AnalysisResultsFixture {
     static let items = [
         AnalysisResultItem(
             id: "today",
-            title: "Action needed today",
-            detail: "3 emails due today",
-            count: 3,
-            symbol: "clock.fill",
-            tint: AnalysisResultsPalette.immediate
+            header: "3 emails due today",
+            loadingHeader: "0 emails due today",
+            accessibilityHeader: "3 emails due today",
+            detail: "Urgent Action Needed",
+            detailIsUrgent: true
         ),
         AnalysisResultItem(
             id: "upcoming",
-            title: "Calendar follow-ups",
-            detail: "2 emails due this week",
-            count: 2,
-            symbol: "calendar",
-            tint: AnalysisResultsPalette.upcoming
+            header: "2 emails due this week",
+            loadingHeader: "0 emails due this week",
+            accessibilityHeader: "2 emails due this week",
+            detail: "Follow-ups/requests",
+            detailIsUrgent: false
         ),
         AnalysisResultItem(
             id: "fyi",
-            title: "No immediate action",
-            detail: "2 FYI emails",
-            count: 2,
-            symbol: "tray.fill",
-            tint: AnalysisResultsPalette.neutral
+            header: "2 emails FYI / low priority",
+            loadingHeader: "0 emails FYI / low priority",
+            accessibilityHeader: "2 emails FYI / low priority",
+            detail: "No Immediate Action",
+            detailIsUrgent: false
         )
     ]
 }
 
 private enum AnalysisResultsPalette {
-    static let primaryText = Color(red: 27.0 / 255.0, green: 29.0 / 255.0, blue: 33.0 / 255.0)
-    static let secondaryText = Color(red: 115.0 / 255.0, green: 117.0 / 255.0, blue: 123.0 / 255.0)
-    static let separator = Color(red: 224.0 / 255.0, green: 226.0 / 255.0, blue: 229.0 / 255.0)
-    static let immediate = Color(red: 239.0 / 255.0, green: 78.0 / 255.0, blue: 69.0 / 255.0)
-    static let upcoming = Color(red: 0, green: 135.0 / 255.0, blue: 220.0 / 255.0)
-    static let neutral = Color(red: 128.0 / 255.0, green: 132.0 / 255.0, blue: 140.0 / 255.0)
+    static let primaryText = Color(red: 16.0 / 255.0, green: 16.0 / 255.0, blue: 18.0 / 255.0)
+    static let secondaryText = Color(red: 119.0 / 255.0, green: 118.0 / 255.0, blue: 126.0 / 255.0)
+    static let urgent = Color(red: 255.0 / 255.0, green: 69.0 / 255.0, blue: 59.0 / 255.0)
+    static let separator = Color(red: 242.0 / 255.0, green: 242.0 / 255.0, blue: 247.0 / 255.0)
 }
 
 #Preview("Analysis results") {
