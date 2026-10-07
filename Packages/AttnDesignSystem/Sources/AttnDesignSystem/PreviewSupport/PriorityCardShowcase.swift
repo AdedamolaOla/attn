@@ -84,10 +84,11 @@ public struct PriorityCardShowcase: View {
                             .background(AttnColors.background)
                     }
                     }
-                    // The geometry reader is constrained to the safe viewport. Clip at
-                    // its top edge so scrolled cards cannot draw into the status bar.
-                    .clipped()
-                    .background(AttnColors.background)
+                }
+                // GeometryReader sets the viewport below the system status area.
+                // Clipping the ScrollView at that edge keeps scrolled cards out of the status bar.
+                .clipped()
+                .background(AttnColors.background)
             }
             .background(AttnColors.background)
             .toolbar(.hidden, for: .navigationBar)
