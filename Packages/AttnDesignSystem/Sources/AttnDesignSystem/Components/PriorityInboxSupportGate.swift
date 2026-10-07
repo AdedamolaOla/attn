@@ -551,6 +551,7 @@ private struct WidgetPriority: Identifiable {
     let urgent: Bool
 }
 
+@MainActor
 private func promptHeader(onClose: @escaping () -> Void) -> some View {
     HStack {
         Spacer()
